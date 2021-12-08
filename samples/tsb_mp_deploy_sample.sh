@@ -191,13 +191,13 @@ create_cert xcp_central \
   "${FOLDER}/ca.key"  
   
 kubectl create secret generic xcp-central-cert -n tsb \
-  --from-file=tls.crt="${FOLDER}/xcp_central/xcp_central.crt" \
-  --from-file=tls.key="${FOLDER}/xcp_central/xcp_central.key" \
+  --from-file=tls.crt="${FOLDER}/xcp_central.crt" \
+  --from-file=tls.key="${FOLDER}/xcp_central.key" \
   --from-file=ca.crt="${FOLDER}/ca.crt"
 
 kubectl create secret generic mpc-certs -n tsb \
-  --from-file=tls.crt="${FOLDER}/xcp_mpc/xcp_mpc.crt" \
-  --from-file=tls.key="${FOLDER}/xcp_mpc/xcp_mpc.key" \
+  --from-file=tls.crt="${FOLDER}/xcp_mpc.crt" \
+  --from-file=tls.key="${FOLDER}/xcp_mpc.key" \
   --from-file=ca.crt="${FOLDER}/ca.crt"
   
 
