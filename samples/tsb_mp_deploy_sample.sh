@@ -154,6 +154,23 @@ spec:
       centralAuthModes:
         jwt: true
         mutualTls: true
+      kubeSpec:
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: CentralXcp
+          name: central-xcp
+          patches:
+          - path: spec.components.centralServer.kubeSpec.service.annotations
+            value:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+          - path: spec.components.centralServer.kubeSpec.overlays
+            value:
+            - apiVersion: v1
+              kind: Service
+              name: xcp-central
+              patches:
+              - path: spec.type
+                value: LoadBalancer
 EOF
 
 kubectl create job -n tsb teamsync-bootstrap --from=cronjob/teamsync
