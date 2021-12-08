@@ -115,6 +115,80 @@ create_cert tsb_mp \
   "${FOLDER}/tsb_envoy.cnf" \
   "${FOLDER}/ca.crt" \
   "${FOLDER}/ca.key" 
+cat >"${xcp_mpc_folder}/xcp_mpc.cnf" <<EOF
+# fields for 'req_distinguished_name' in this CNF are just example
+[ req ]
+encrypt_key        = no
+utf8               = yes
+default_bits       = 4096
+default_md         = sha256
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = req_ext
+
+[ req_distinguished_name ]
+countryName         = US
+stateOrProvinceName = CA
+organizationName    = Example
+commonName          = XCP MPC
+
+# you will have to use 'extendedKeyUsage = serverAuth, clientAuth' because it will be checked by the TSB.
+[ req_ext ]
+basicConstraints = critical, CA:false
+keyUsage         = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName   = @alt_names
+
+# you will have to use the following DNS name and URI because it will be checked by the TSB
+[ alt_names ]
+DNS.1 = xcp.tetrate.io
+URI.1 = spiffe://xcp.tetrate.io/mpc
+EOF
+
+create_cert xcp_mpc \
+  "${FOLDER}" \
+  "${FOLDER}/xcp_mpc.cnf" \
+  "${FOLDER}/ca.crt" \
+  "${FOLDER}/ca.key" 
+
+
+cat >"${xcp_central_folder}/xcp_central.cnf" <<EOF
+# fields for 'req_distinguished_name' in this CNF are just example
+[ req ]
+encrypt_key        = no
+utf8               = yes
+default_bits       = 4096
+default_md         = sha256
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = req_ext
+
+[ req_distinguished_name ]
+countryName         = US
+stateOrProvinceName = CA
+organizationName    = Example
+commonName          = XCP Central
+
+# you will have to use 'extendedKeyUsage = serverAuth, clientAuth' because it will be checked by the TSB.
+[ req_ext ]
+basicConstraints = critical, CA:false
+keyUsage         = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName   = @alt_names
+
+# you will have to use the following DNS name and URI because it will be checked by the TSB
+[ alt_names ]
+DNS.1 = xcp.tetrate.io
+URI.1 = spiffe://xcp.tetrate.io/central
+EOF
+
+create_cert xcp_central \
+  "${FOLDER}" \
+  "${FOLDER}/xcp_central.cnf" \
+  "${FOLDER}/ca.crt" \
+  "${FOLDER}/ca.key"  
 
 curl -o tctl140 https://binaries.dl.tetrate.io/public/raw/versions/darwin-amd64-1.4.0/tct
 chmod a+x tctl140
