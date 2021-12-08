@@ -189,6 +189,17 @@ create_cert xcp_central \
   "${FOLDER}/xcp_central.cnf" \
   "${FOLDER}/ca.crt" \
   "${FOLDER}/ca.key"  
+  
+kubectl create secret generic xcp-central-cert -n tsb \
+  --from-file=tls.crt="${FOLDER}/xcp_central/xcp_central.crt" \
+  --from-file=tls.key="${FOLDER}/xcp_central/xcp_central.key" \
+  --from-file=ca.crt="${FOLDER}/ca.crt"
+
+kubectl create secret generic mpc-certs -n tsb \
+  --from-file=tls.crt="${FOLDER}/xcp_mpc/xcp_mpc.crt" \
+  --from-file=tls.key="${FOLDER}/xcp_mpc/xcp_mpc.key" \
+  --from-file=ca.crt="${FOLDER}/ca.crt"
+  
 
 curl -o tctl140 https://binaries.dl.tetrate.io/public/raw/versions/darwin-amd64-1.4.0/tct
 chmod a+x tctl140
