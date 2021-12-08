@@ -115,7 +115,7 @@ create_cert tsb_mp \
   "${FOLDER}/tsb_envoy.cnf" \
   "${FOLDER}/ca.crt" \
   "${FOLDER}/ca.key" 
-cat >"${xcp_mpc_folder}/xcp_mpc.cnf" <<EOF
+cat >"${FOLDER}/xcp_mpc.cnf" <<EOF
 # fields for 'req_distinguished_name' in this CNF are just example
 [ req ]
 encrypt_key        = no
@@ -153,7 +153,7 @@ create_cert xcp_mpc \
   "${FOLDER}/ca.key" 
 
 
-cat >"${xcp_central_folder}/xcp_central.cnf" <<EOF
+cat >"${FOLDER}/xcp_central.cnf" <<EOF
 # fields for 'req_distinguished_name' in this CNF are just example
 [ req ]
 encrypt_key        = no
