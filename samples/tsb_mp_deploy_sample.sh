@@ -144,6 +144,12 @@ spec:
   hub: $REGISTRY
   organization: tetrate
   components:
+    frontEnvoy:
+      kubeSpec:
+        service:
+          annotations:
+            service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+          type: LoadBalancer
     xcp:
       centralAuthModes:
         jwt: true
