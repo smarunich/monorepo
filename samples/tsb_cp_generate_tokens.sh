@@ -57,7 +57,7 @@ metadata:
   namespace: istio-system
 type: Opaque
 data:
-  jwt: "$(cat cluster1-generateTokens.json | jq -r '.tokens."xcp-edge-cluster1"'| base64)""
+  jwt: "$(cat cluster1-generateTokens.json | jq -r '.tokens."xcp-edge-cluster1"'| base64)"
 ---
 apiVersion: v1
 kind: Secret
