@@ -60,6 +60,15 @@ spec:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
           kind: EdgeXcp
           name: edge-xcp
+          # These patches enable edges to be able to verify Central's server cert. The host is
+          # changed from a bare IP address as it's difficult to generate a cert with the IP
+          # address in the SANs as the IP isn't known until after the service is deployed.
+          patches:
+            - path: spec.centralAuthJwt.centralSni
+              value: "central.xcp.tetrate.io"
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
           patches:
           - path: spec.components.edgeServer.kubeSpec.service.annotations
             value:
