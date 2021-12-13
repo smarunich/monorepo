@@ -11,7 +11,7 @@ metadata:
   namespace: istio-system
 type: Opaque
 data:
-  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."oap-agent-cluster1"')"
+  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."oap-agent-cluster1"' | base64)"
 ---
 apiVersion: v1
 kind: Secret
@@ -20,7 +20,7 @@ metadata:
   namespace: istio-system
 type: Opaque
 data:
-  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."otel-collector-cluster1"')"
+  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."otel-collector-cluster1"'| base64)"
 ---
 apiVersion: v1
 kind: Secret
@@ -29,7 +29,7 @@ metadata:
   namespace: istio-system
 type: Opaque
 data:
-  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."zipkin-agent-cluster1"')"
+  token: "$(cat cluster1-generateTokens.json | jq -r '.tokens."zipkin-agent-cluster1"'| base64)"
 ---
 apiVersion: v1
 kind: Secret
@@ -57,7 +57,7 @@ metadata:
   namespace: istio-system
 type: Opaque
 data:
-  jwt: "$(cat cluster1-generateTokens.json | jq -r '.tokens."xcp-edge-cluster1"')"
+  jwt: "$(cat cluster1-generateTokens.json | jq -r '.tokens."xcp-edge-cluster1"'| base64)""
 ---
 apiVersion: v1
 kind: Secret
