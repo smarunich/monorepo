@@ -29,6 +29,8 @@ tctl install manifest control-plane-secrets \
     --elastic-password tsb-elastic-password \
     --elastic-username tsb \
     --cluster cluster1 \
+    --xcp-central-ca-bundle "$(cat xcp_central.crt)" \
+    --elastic-ca-certificate "$(cat ca.crt)" \
     > ${FOLDER}/cluster1-controlplane-secrets.yaml
     
 k apply -f ${FOLDER}/cluster1-controlplane-secrets.yaml
