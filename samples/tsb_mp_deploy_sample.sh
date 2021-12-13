@@ -105,7 +105,7 @@ extendedKeyUsage     = serverAuth, clientAuth
 subjectAltName       = @alt_names
 
 [ alt_names ]
-IP.1 = 10.64.8.208
+IP.1 = 52.191.20.15
 DNS.1 = ${TSB_FQDN_PREFIX}.${BASE_FQDN}
 EOF
 
@@ -115,6 +115,7 @@ create_cert tsb_mp \
   "${FOLDER}/tsb_envoy.cnf" \
   "${FOLDER}/ca.crt" \
   "${FOLDER}/ca.key" 
+  
 cat >"${FOLDER}/xcp_mpc.cnf" <<EOF
 # fields for 'req_distinguished_name' in this CNF are just example
 [ req ]
@@ -200,6 +201,10 @@ kubectl create secret generic mpc-certs -n tsb \
   --from-file=tls.key="${FOLDER}/xcp_mpc.key" \
   --from-file=ca.crt="${FOLDER}/ca.crt"
   
+kubectl create secret generic tsb-certs -n tsb \
+  --from-file=tls.crt="${FOLDER}/tsb_mp.crt" \
+  --from-file=tls.key="${FOLDER}/tsb_mp.key"
+
 
 curl -o tctl140 https://binaries.dl.tetrate.io/public/raw/versions/darwin-amd64-1.4.0/tct
 chmod a+x tctl140
