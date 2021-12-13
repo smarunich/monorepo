@@ -54,6 +54,7 @@ spec:
     clusterName: cluster1
   components:
     xcp:
+      centralAuthMode: JWT
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
