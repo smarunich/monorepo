@@ -206,7 +206,7 @@ kubectl create secret generic tsb-certs -n tsb \
   --from-file=tls.key="${FOLDER}/tsb_mp.key"
 
 
-curl -o tctl140 https://binaries.dl.tetrate.io/public/raw/versions/darwin-amd64-1.4.0/tct
+curl -o tctl140 https://binaries.dl.tetrate.io/public/raw/versions/darwin-amd64-1.4.0/tctl
 chmod a+x tctl140
 
 ./tctl140 install manifest management-plane-operator \
