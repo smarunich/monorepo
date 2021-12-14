@@ -265,6 +265,6 @@ EOF
 
 kubectl create job -n tsb teamsync-bootstrap --from=cronjob/teamsync
 
-./tctl140 config clusters set default --bridge-address $(kubectl get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}'):8443
+./tctl140 config clusters set default --tls-insecure --bridge-address $(kubectl get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}'):8443 
 ./tctl140 config profiles set-current default
 ./tctl140 login --org tetrate --username admin --password Tetrate123 --tenant tetrate
