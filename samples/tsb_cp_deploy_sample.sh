@@ -4,7 +4,7 @@ export BASE_FQDN="example.com"
 export TSB_FQDN_PREFIX="tsb"
 export TSB_IP="52.191.20.15"
 
-./tctl140 config clusters set default --bridge-address $(kubectl get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}'):8443
+./tctl140 config clusters set default --tls-insecure --bridge-address $(kubectl get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}'):8443
 ./tctl140 config profiles set-current default
 ./tctl140 login --org tetrate --username admin --password Tetrate123 --tenant tetrate
 
