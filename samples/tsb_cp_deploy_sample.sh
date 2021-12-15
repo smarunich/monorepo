@@ -68,21 +68,17 @@ spec:
           patches:
             - path: spec.centralAuthJwt.centralSni
               value: "central.xcp.tetrate.io"
-        - apiVersion: install.xcp.tetrate.io/v1alpha1
-          kind: EdgeXcp
-          name: edge-xcp
-          patches:
-          - path: spec.components.edgeServer.kubeSpec.service.annotations
-            value:
-              service.beta.kubernetes.io/azure-load-balancer-internal: "false"
-          - path: spec.components.edgeServer.kubeSpec.overlays
-            value:
-            - apiVersion: v1
-              kind: Service
-              name: xcp-edge
-              patches:
-              - path: spec.type
-                value: LoadBalancer
+            - path: spec.components.edgeServer.kubeSpec.service.annotations
+              value:
+                service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+            - path: spec.components.edgeServer.kubeSpec.overlays
+              value:
+              - apiVersion: v1
+                kind: Service
+                name: xcp-edge
+                patches:
+                - path: spec.type
+                  value: LoadBalancer
   meshExpansion: {}
 EOF
  
