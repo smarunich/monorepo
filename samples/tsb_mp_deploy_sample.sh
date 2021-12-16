@@ -1,7 +1,6 @@
 export REGISTRY="mstsbacrx9pslvvlqec0jpg3.azurecr.io"
 export FOLDER="."
-export BASE_FQDN="example.com"
-export TSB_FQDN_PREFIX="tsb"
+export TSB_FQDN="ms-station.cx.tetrate.info"
 
 function create_cert() {
   local readonly name=$1
@@ -106,7 +105,7 @@ subjectAltName       = @alt_names
 
 [ alt_names ]
 IP.1 = 52.191.20.15
-DNS.1 = ${TSB_FQDN_PREFIX}.${BASE_FQDN}
+DNS.1 = ${TSB_FQDN}
 EOF
 
 
@@ -145,6 +144,8 @@ subjectAltName   = @alt_names
 [ alt_names ]
 DNS.1 = xcp.tetrate.io
 URI.1 = spiffe://xcp.tetrate.io/mpc
+DNS.2 = ${TSB_FQDN}
+DNS.3 = ${TSB_FQDN}:9443
 EOF
 
 create_cert xcp_mpc \
