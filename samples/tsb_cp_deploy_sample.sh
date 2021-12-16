@@ -2,7 +2,7 @@ export REGISTRY="mstsbacrx9pslvvlqec0jpg3.azurecr.io"
 export FOLDER="."
 export BASE_FQDN="example.com"
 export TSB_FQDN_PREFIX="tsb"
-export TSB_IP="52.191.20.15"
+export TSB_FQDN="ms-station.cx.tetrate.info"
 
 ./tctl140 config clusters set default --tls-insecure --bridge-address $(kubectl get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}'):8443
 ./tctl140 config profiles set-current default
@@ -48,13 +48,13 @@ spec:
   hub: ${REGISTRY}
   telemetryStore:
     elastic:
-      host: ${TSB_IP}
+      host: ${TSB_FQDN}
       port: 8443
       protocol: https
       selfSigned: true
       version: 7
   managementPlane:
-    host: ${TSB_IP}
+    host: ${TSB_FQDN}
     port: 8443
     clusterName: cluster1
   components:
