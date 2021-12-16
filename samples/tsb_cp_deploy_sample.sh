@@ -67,7 +67,7 @@ spec:
           # address in the SANs as the IP isn't known until after the service is deployed.
           patches:
           - path: "spec.centralAuthJwt.centralCaSecret"
-           value: "xcp-central-ca-bundle"
+            value: "xcp-central-ca-bundle"
           - path: spec.components.edgeServer.kubeSpec.service.annotations
             value:
               service.beta.kubernetes.io/azure-load-balancer-internal: "false"
