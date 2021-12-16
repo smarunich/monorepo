@@ -33,7 +33,10 @@ tctl install manifest control-plane-secrets \
     --elastic-ca-certificate "$(cat ca.crt)" \
     > ${FOLDER}/cluster1-controlplane-secrets.yaml
     
+    
 k apply -f ${FOLDER}/cluster1-controlplane-secrets.yaml
+
+kubectl -n istio-system create secret generic xcp-edge-ca-bundle --from-literal="ca.crt=$(kubectl get secret -n tsb xcp-central-cert -o jsonpath='{.data.ca\.crt}' | base64 -d)"
 
 cat >"${FOLDER}/cluster1-controlplane.yaml" <<EOF
 apiVersion: install.tetrate.io/v1alpha1
