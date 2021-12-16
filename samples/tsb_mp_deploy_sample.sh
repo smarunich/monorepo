@@ -243,7 +243,7 @@ spec:
     xcp:
       centralAuthModes:
         jwt: true
-        mutualTls: true
+        mutualTls: false
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
