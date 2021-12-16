@@ -144,8 +144,6 @@ subjectAltName   = @alt_names
 [ alt_names ]
 DNS.1 = xcp.tetrate.io
 URI.1 = spiffe://xcp.tetrate.io/mpc
-DNS.2 = ${TSB_FQDN}
-DNS.3 = ${TSB_FQDN}:9443
 EOF
 
 create_cert xcp_mpc \
@@ -184,6 +182,8 @@ subjectAltName   = @alt_names
 [ alt_names ]
 DNS.1 = xcp.tetrate.io
 URI.1 = spiffe://xcp.tetrate.io/central
+DNS.2 = ${TSB_FQDN}
+DNS.3 = ${TSB_FQDN}:9443
 EOF
 
 create_cert xcp_central \
