@@ -66,19 +66,19 @@ spec:
           # changed from a bare IP address as it's difficult to generate a cert with the IP
           # address in the SANs as the IP isn't known until after the service is deployed.
           patches:
-            - path: spec.centralAuthJwt.centralSni
-              value: "central.xcp.tetrate.io"
-            - path: spec.components.edgeServer.kubeSpec.service.annotations
-              value:
-                service.beta.kubernetes.io/azure-load-balancer-internal: "false"
-            - path: spec.components.edgeServer.kubeSpec.overlays
-              value:
-              - apiVersion: v1
-                kind: Service
-                name: xcp-edge
-                patches:
-                - path: spec.type
-                  value: LoadBalancer
+          - path: "spec.centralAuthJwt.centralCaSecret"
+           value: "xcp-central-ca-bundle"
+          - path: spec.components.edgeServer.kubeSpec.service.annotations
+            value:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+          - path: spec.components.edgeServer.kubeSpec.overlays
+            value:
+            - apiVersion: v1
+              kind: Service
+              name: xcp-edge
+              patches:
+              - path: spec.type
+                value: LoadBalancer
   meshExpansion: {}
 EOF
  
