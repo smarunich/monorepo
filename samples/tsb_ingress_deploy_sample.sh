@@ -44,6 +44,7 @@ spec:
   http:
     - name: ${APP_NAME}
       hostname: "bookinfo.tetrate.com"
+      port: 80
       routing:
         rules:
           - route:
