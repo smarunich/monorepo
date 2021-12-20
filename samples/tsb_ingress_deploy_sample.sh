@@ -3,7 +3,7 @@ export FOLDER="."
 export BASE_FQDN="example.com"
 export TSB_FQDN_PREFIX="tsb"
 export TSB_FQDN="ms-station.cx.tetrate.info"
-export TSB_GATEWAY="tsb-gateway"
+export TSB_GATEWAY="ingress-gateway"
 export APP_NAME="bookinfo"
 export APP_NAMESPACE="bookinfo"
 
