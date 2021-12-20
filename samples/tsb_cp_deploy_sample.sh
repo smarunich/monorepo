@@ -69,6 +69,10 @@ spec:
           # changed from a bare IP address as it's difficult to generate a cert with the IP
           # address in the SANs as the IP isn't known until after the service is deployed.
           patches:
+          - path: spec.components.edgeServer.kubeSpec.deployment.env
+            value:
+            - name: ENABLE_RESTORE_ORIGINAL_NAMES
+              value: "false"
           - path: "spec.centralAuthJwt.centralCaSecret"
             value: "xcp-central-ca-bundle"
           - path: spec.components.edgeServer.kubeSpec.service.annotations
