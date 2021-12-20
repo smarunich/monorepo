@@ -42,12 +42,12 @@ spec:
     labels:
       app: ${TSB_GATEWAY}
   http:
-    - name: bookinfo
+    - name: ${APP_NAME}
       hostname: "bookinfo.tetrate.com"
       routing:
         rules:
           - route:
-              host: "bookinfo/productpage.bookinfo.svc.cluster.local"
+              host: "${APP_NAMESPACE}/productpage.bookinfo.svc.cluster.local"
 EOF
 
 tctl apply -f "${FOLDER}/bookinfo-ingress-gateway.yaml"
