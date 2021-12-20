@@ -52,3 +52,5 @@ spec:
 EOF
 
 tctl apply -f "${FOLDER}/bookinfo-ingress-gateway.yaml"
+
+kubectl label namespace ${APP_NAMESPACE} istio-injection=enabled --overwrite
