@@ -49,3 +49,5 @@ spec:
           - route:
               host: "bookinfo/productpage.bookinfo.svc.cluster.local"
 EOF
+
+tctl apply -f "${FOLDER}/bookinfo-ingress-gateway.yaml"
