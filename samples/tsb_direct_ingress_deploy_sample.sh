@@ -56,6 +56,8 @@ metadata:
 spec:
   hosts: 
   - {{APP_FQDN}}
+  gateways:
+  - {{GATEWAY}}
   http:
   - route:
     - destination:
