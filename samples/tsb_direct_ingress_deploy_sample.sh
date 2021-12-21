@@ -32,7 +32,7 @@ metadata:
     tsb.tetrate.io/organization: {{ORGANIZATION}}
     tsb.tetrate.io/tenant: {{TENANT}}
     tsb.tetrate.io/workspace: {{WORK_SPACE}}
-    tsb.tetrate.io/gatewayGroup: {{GATEWAY_GROUP}}
+    tsb.tetrate.io/trafficGroup: {{GATEWAY_GROUP}}
   name: dr-{{APP_NAME}}
 spec:
   host: {{APP_NAME}}
@@ -51,7 +51,7 @@ metadata:
     tsb.tetrate.io/organization: {{ORGANIZATION}}
     tsb.tetrate.io/tenant: {{TENANT}}
     tsb.tetrate.io/workspace: {{WORK_SPACE}}
-    tsb.tetrate.io/gatewayGroup: {{GATEWAY_GROUP}}
+    tsb.tetrate.io/gatewayGroup: {{TRAFFIC_GROUP}}
   name: vs-{{APP_NAME}}
 spec:
   hosts: 
