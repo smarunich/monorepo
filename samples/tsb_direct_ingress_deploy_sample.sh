@@ -54,7 +54,8 @@ metadata:
     tsb.tetrate.io/gatewayGroup: {{GATEWAY_GROUP}}
   name: vs-{{APP_NAME}}
 spec:
-  hosts: {{APP_FQDN}}
+  hosts: 
+  - {{APP_FQDN}}
   http:
   - route:
     - destination:
