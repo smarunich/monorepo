@@ -4,7 +4,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: {{DNS}}
+    external-dns.alpha.kubernetes.io/hostname: {{FQDN}}
     tsb.tetrate.io/organization: {{ORGANIZATION}}
     tsb.tetrate.io/tenant: {{TENANT}}
     tsb.tetrate.io/workspace: {{WORK_SPACE}}
@@ -20,7 +20,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - *
+    - {{FQDN}}
 EOF
 
 cat >"${FOLDER}/dr-sample.yaml" <<EOF
