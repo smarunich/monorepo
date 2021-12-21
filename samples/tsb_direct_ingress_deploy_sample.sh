@@ -15,10 +15,10 @@ spec:
   selector:
     app: igwy-{{NAME_SPACE}}
   servers:
-  - hosts:
-    - {{DNS}}
-    port:
-      name: http
+  - port:
       number: 80
+      name: http
       protocol: HTTP
+    hosts:
+    - *
 EOF
