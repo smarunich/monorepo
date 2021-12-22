@@ -40,6 +40,9 @@ spec:
   - name: v1
     labels:
       version: v1
+  - name: v2
+    labels:
+      version: v2
 EOF
 
 cat >"${FOLDER}/vs-sample.yaml" <<EOF
@@ -63,6 +66,14 @@ spec:
     - destination:
         host: {{APP_NAME}}
         subset: v1
+  - match:
+    - headers:
+        version:
+          exact: v2
+    route:
+    - destination:
+        host: reviews
+        subset: v2
 EOF
 
 
