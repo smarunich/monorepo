@@ -72,7 +72,7 @@ spec:
           exact: v2
     route:
     - destination:
-        host: reviews
+        host: {{APP_NAME}}
         subset: v2
 EOF
 
