@@ -16,6 +16,7 @@ metadata:
   organization: tetrate
 spec:
   tokenTtl: "8760h"
+  tier1Cluster: false
 EOF
 
 ./tctl140 apply -f "${FOLDER}/tctl-cluster1.yaml"
@@ -45,7 +46,6 @@ metadata:
   name: controlplane
   namespace: istio-system
 spec:
-  tier1Cluster: false
   hub: ${REGISTRY}
   telemetryStore:
     elastic:
