@@ -45,6 +45,7 @@ metadata:
   name: controlplane
   namespace: istio-system
 spec:
+  tier1Cluster: false
   hub: ${REGISTRY}
   telemetryStore:
     elastic:
