@@ -58,7 +58,7 @@ subjectAltName       = @alt_names
 DNS.1 = istiod.istio-system.svc
 EOF
 
-create_cert istio_intermediate_ca \
+create_cert istiod_intermediate_ca \
   "${FOLDER}" \
   "${FOLDER}/istiod_intermediate_ca.cnf" \
   "${FOLDER}/ca.crt" \
@@ -66,7 +66,7 @@ create_cert istio_intermediate_ca \
 
 #kubectl create namespace istio-system
 kubectl create secret generic cacerts -n istio-system \
-  --from-file=ca-cert.pem="${FOLDER}/istio_intermediate_ca.crt" \
-  --from-file=ca-key.pem="${FOLDER}/istio_intermediate_ca.key" \
+  --from-file=ca-cert.pem="${FOLDER}/istiod_intermediate_ca.crt" \
+  --from-file=ca-key.pem="${FOLDER}/istiod_intermediate_ca.key" \
   --from-file=root-cert.pem="${FOLDER}/ca.crt" \
   --from-file=cert-chain.pem="${FOLDER}/ca.crt"
