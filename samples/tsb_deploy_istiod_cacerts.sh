@@ -69,4 +69,4 @@ kubectl create secret generic cacerts -n istio-system \
   --from-file=ca-cert.pem="${FOLDER}/istiod_intermediate_ca.crt" \
   --from-file=ca-key.pem="${FOLDER}/istiod_intermediate_ca.key" \
   --from-file=root-cert.pem="${FOLDER}/ca.crt" \
-  --from-file=cert-chain.pem="${FOLDER}/ca.crt"
+  --from-file=cert-chain.pem="${FOLDER}/istiod_intermediate_ca.crt" \
