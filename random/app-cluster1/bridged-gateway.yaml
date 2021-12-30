@@ -1,0 +1,12 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: igw-bookinfo-bridged
+  namespace: bookinfo-bridged
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/azure-load-balancer-internal: "false"

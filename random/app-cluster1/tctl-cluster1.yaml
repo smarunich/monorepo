@@ -1,0 +1,8 @@
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  name: app-cluster1
+  organization: tetrate
+spec:
+  tokenTtl: "8760h"
+  tier1Cluster: false

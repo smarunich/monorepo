@@ -1,0 +1,45 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: igw-bookinfo-bridged
+  group: proxy-bridged-gatewaygroup
+  workspace: proxy-bridged-workspace
+spec:
+  workloadSelector:
+    namespace: bookinfo-bridged
+    labels:
+      app: igw-bookinfo-bridged
+  http:
+    - name: bookinfo
+      hostname: bookinfo-bridged.tetrate.com
+      port: 80
+      routing:
+        rules:
+          - route:
+              host: "bookinfo-bridged/productpage.bookinfo-bridged.svc.cluster.local"
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: tier1-bookinfo-bridged
+  group: proxy-bridged-gatewaygroup
+  workspace: proxy-bridged-workspace
+spec:
+  workloadSelector:
+    namespace: tier1-bridged
+    labels:
+      app: tier1-bridged
+  externalServers:
+  - hostname: bookinfo-bridged.tetrate.com
+    name: bookinfo
+    port: 80
+    tls:
+      mode: DISABLED
+    clusters:
+    - name: app-cluster1
+      weight: 100

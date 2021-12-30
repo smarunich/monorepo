@@ -1,0 +1,48 @@
+apiVersion: install.tetrate.io/v1alpha1
+kind: ControlPlane
+metadata:
+  name: controlplane
+  namespace: istio-system
+spec:
+  hub: mstsbacrx9pslvvlqec0jpg3.azurecr.io
+  telemetryStore:
+    elastic:
+      host: ms-station.cx.tetrate.info
+      port: 8443
+      protocol: https
+      selfSigned: true
+      version: 7
+  managementPlane:
+    host: ms-station.cx.tetrate.info
+    port: 8443
+    clusterName: app-cluster1
+  components:
+    xcp:
+      centralAuthMode: JWT
+      kubeSpec:
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
+          # These patches enable edges to be able to verify Central's server cert. The host is
+          # changed from a bare IP address as it's difficult to generate a cert with the IP
+          # address in the SANs as the IP isn't known until after the service is deployed.
+          patches:
+          - path: spec.components.edgeServer.kubeSpec.deployment.env
+            value:
+            - name: ENABLE_RESTORE_ORIGINAL_NAMES
+              value: "false"
+          - path: "spec.centralAuthJwt.centralCaSecret"
+            value: "xcp-central-ca-bundle"
+          - path: spec.components.edgeServer.kubeSpec.service.annotations
+            value:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+          - path: spec.components.edgeServer.kubeSpec.overlays
+            value:
+            - apiVersion: v1
+              kind: Service
+              name: xcp-edge
+              patches:
+              - path: spec.type
+                value: LoadBalancer
+  meshExpansion: {}

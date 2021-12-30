@@ -1,0 +1,142 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/gatewayGroup: proxy-direct-gatewaygroup
+  name: tier1-direct
+  namespace: tier1-direct
+spec:
+  selector:
+    app: tier1-direct
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - bookinfo-direct.tetrate.com
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/trafficGroup: proxy-direct-trafficgroup
+  name: dr-tier1-bookinfo-direct
+  namespace: tier1-direct
+spec:
+  exportTo:
+  - .
+  host: bookinfo-direct.tetrate.com
+  subsets:
+  - labels:
+      xcp.tetrate.io/cluster: app-cluster1
+    name: tier1-bookinfo-direct-bookinfo-external-0
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+      sni: bookinfo-direct.tetrate.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/gatewayGroup: proxy-direct-gatewaygroup
+  name: vs-tier1-bookinfo-direct
+  namespace: tier1-direct
+spec:
+  hosts: 
+  - bookinfo-direct.tetrate.com
+  gateways:
+  - tier1-direct/tier1-direct
+  http:
+  - route:
+    - destination:
+        host: "bookinfo-direct.tetrate.com"
+    headers:
+      request:
+        set:
+          xcp: "rocks"
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/gatewayGroup: proxy-direct-gatewaygroup
+  name: igwy-ap-bookinfo-direct
+  namespace: bookinfo-direct
+spec:
+  action: ALLOW
+  rules:
+  - from:
+  - to:
+    - operation:
+        hosts:
+        - bookinfo-direct.tetrate.com 
+        - bookinfo-direct.tetrate.com:80
+        ports:
+        - "80"
+        - "8080"
+  selector:
+    matchLabels:
+      app: igw-bookinfo-direct
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/gatewayGroup: proxy-direct-gatewaygroup
+  name: igw-bookinfo-direct
+  namespace: bookinfo-direct
+spec:
+  selector:
+    app: igw-bookinfo-direct
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - bookinfo-direct.tetrate.com 
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: proxy-direct-workspace
+    tsb.tetrate.io/gatewayGroup: proxy-direct-gatewaygroup
+  name: vs-bookinfo-direct
+  namespace: bookinfo-direct
+spec:
+  hosts: 
+  - bookinfo-direct.tetrate.com
+  gateways:
+  - bookinfo-direct/igw-bookinfo-direct
+  http:
+  - route:
+    - destination:
+        host: "productpage.bookinfo-direct.svc.cluster.local"
+  - match:
+    - headers:
+        xcp:
+          exact: "rocks"
+    redirect:
+      uri: /v1/bookRatings
+      authority: "ratings.bookinfo-direct.svc.cluster.local"
