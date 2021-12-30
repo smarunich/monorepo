@@ -1,0 +1,1 @@
+tctl x sidecar-bootstrap tier1-bridged-vm1.tier1-bridged --ssh-user istio-proxy --ssh-key ../general-tf-demo/ms-tsbadmin.pem

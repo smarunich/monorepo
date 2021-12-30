@@ -1,0 +1,1 @@
+kubectl scale --current-replicas=2 --replicas=3 deployment/mysql

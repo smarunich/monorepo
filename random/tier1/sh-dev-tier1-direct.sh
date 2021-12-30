@@ -1,0 +1,1 @@
+kubectl scale --replicas=0 deployment/tier1-direct -n tier1-direct

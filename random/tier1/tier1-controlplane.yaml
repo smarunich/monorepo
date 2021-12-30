@@ -1,0 +1,141 @@
+apiVersion: install.tetrate.io/v1alpha1
+kind: ControlPlane
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"install.tetrate.io/v1alpha1","kind":"ControlPlane","metadata":{"annotations":{},"name":"controlplane","namespace":"istio-system"},"spec":{"components":{"xcp":{"centralAuthMode":"JWT","kubeSpec":{"overlays":[{"apiVersion":"install.xcp.tetrate.io/v1alpha1","kind":"EdgeXcp","name":"edge-xcp","patches":[{"path":"spec.centralAuthJwt.centralCaSecret","value":"xcp-central-ca-bundle"},{"path":"spec.components.edgeServer.kubeSpec.service.annotations","value":{"service.beta.kubernetes.io/azure-load-balancer-internal":"false"}},{"path":"spec.components.edgeServer.kubeSpec.overlays","value":[{"apiVersion":"v1","kind":"Service","name":"xcp-edge","patches":[{"path":"spec.type","value":"LoadBalancer"}]}]}]}]}}},"hub":"mstsbacrx9pslvvlqec0jpg3.azurecr.io","managementPlane":{"clusterName":"tier1","host":"ms-station.cx.tetrate.info","port":8443},"meshExpansion":{},"telemetryStore":{"elastic":{"host":"ms-station.cx.tetrate.info","port":8443,"protocol":"https","selfSigned":true,"version":7}}}}
+  creationTimestamp: "2021-12-29T06:21:55Z"
+  generation: 1
+  name: controlplane
+  namespace: istio-system
+  resourceVersion: "17861921"
+  uid: e562b037-ed45-4205-85fe-9da266d116cb
+spec:
+  components:
+    collector:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1000Mi
+            requests:
+              cpu: 400m
+              memory: 500Mi
+    hpaAdapter:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+        service:
+          type: ClusterIP
+    istio:
+      kubeSpec:
+        deployment:
+          hpaSpec:
+            maxReplicas: 10
+            metrics:
+            - resource:
+                name: cpu
+                targetAverageUtilization: 75
+              type: Resource
+            minReplicas: 1
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 4096Mi
+            requests:
+              cpu: 500m
+              memory: 2048Mi
+    oap:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 2Gi
+    onboarding:
+      operator:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
+          service:
+            type: ClusterIP
+      repository:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
+          service:
+            type: ClusterIP
+    xcp:
+      centralAuthMode: JWT
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
+          patches:
+          - path: spec.centralAuthJwt.centralCaSecret
+            value: xcp-central-ca-bundle
+          - path: spec.components.edgeServer.kubeSpec.service.annotations
+            value:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+          - path: spec.components.edgeServer.kubeSpec.overlays
+            value:
+            - apiVersion: v1
+              kind: Service
+              name: xcp-edge
+              patches:
+              - path: spec.type
+                value: LoadBalancer
+        service:
+          type: ClusterIP
+    zipkin:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+  hub: mstsbacrx9pslvvlqec0jpg3.azurecr.io
+  managementPlane:
+    clusterName: tier1
+    host: ms-station.cx.tetrate.info
+    port: 8443
+  meshExpansion: {}
+  telemetryStore:
+    elastic:
+      host: ms-station.cx.tetrate.info
+      port: 8443
+      selfSigned: true
+      version: 7

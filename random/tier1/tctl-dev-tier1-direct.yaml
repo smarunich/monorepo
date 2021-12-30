@@ -1,0 +1,79 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  displayName: proxy-direct-workspace
+  name: proxy-direct-workspace
+  organization: tetrate
+  tenant: dev
+spec:
+  displayName: proxy-direct-workspace
+  namespaceSelector:
+    names:
+    - tier1/tier1-direct
+    - app-cluster1/bookinfo-direct
+  privileged: false
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-direct-gatewaygroup
+  name: proxy-direct-gatewaygroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-direct-workspace
+spec:
+  configMode: DIRECT
+  displayName: proxy-direct-gatewaygroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-direct
+    - app-cluster1/bookinfo-direct
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-direct-trafficgroup
+  name: proxy-direct-trafficgroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-direct-workspace
+spec:
+  configMode: BRIDGED
+  displayName: proxy-direct-trafficgroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-direct
+    - app-cluster1/bookinfo-direct
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-direct-securitygroup
+  name: proxy-direct-securitygroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-direct-workspace
+spec:
+  configMode: BRIDGED
+  displayName: proxy-direct-securitygroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-direct
+    - app-cluster1/bookinfo-direct
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  displayName: default-setting
+  group: proxy-direct-securitygroup
+  name: default-setting
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-direct-workspace
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: WORKSPACE
+  displayName: default-setting

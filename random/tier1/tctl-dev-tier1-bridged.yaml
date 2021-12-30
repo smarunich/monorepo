@@ -1,0 +1,63 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  displayName: proxy-bridged-workspace
+  name: proxy-bridged-workspace
+  organization: tetrate
+  tenant: dev
+spec:
+  displayName: proxy-bridged-workspace
+  namespaceSelector:
+    names:
+    - tier1/tier1-bridged
+    - app-cluster1/bookinfo-bridged
+  privileged: false
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-bridged-gatewaygroup
+  name: proxy-bridged-gatewaygroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-bridged-workspace
+spec:
+  configMode: BRIDGED
+  displayName: proxy-bridged-gatewaygroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-bridged
+    - app-cluster1/bookinfo-bridged
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-bridged-trafficgroup
+  name: proxy-bridged-trafficgroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-bridged-workspace
+spec:
+  configMode: BRIDGED
+  displayName: proxy-bridged-trafficgroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-bridged
+    - app-cluster1/bookinfo-bridged
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: proxy-bridged-securitygroup
+  name: proxy-bridged-securitygroup
+  organization: tetrate
+  tenant: dev
+  workspace: proxy-bridged-workspace
+spec:
+  configMode: BRIDGED
+  displayName: proxy-bridged-securitygroup
+  namespaceSelector:
+    names:
+    - tier1/tier1-bridged
+    - app-cluster1/bookinfo-bridged

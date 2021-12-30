@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tier1-bridged
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: Tier1Gateway
+metadata:
+  name: tier1-bridged
+  namespace: tier1-bridged
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/azure-load-balancer-internal: "false"
