@@ -132,4 +132,9 @@ spec:
   meshExpansion: {}
 EOF
  
+oc adm policy add-scc-to-user anyuid -n istio-system -z istiod-service-account # SA for istiod
+oc adm policy add-scc-to-user anyuid -n istio-system -z vmgateway-service-account # SA for vmgateway
+oc adm policy add-scc-to-user anyuid -n istio-system -z istio-system-oap # SA for OAP
+oc adm policy add-scc-to-user privileged -n istio-system -z xcp-edge # SA for XCP-Edge
+
 kubectl apply -f "${FOLDER}/cluster1-controlplane.yaml" 
