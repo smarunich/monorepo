@@ -138,3 +138,11 @@ oc adm policy add-scc-to-user anyuid -n istio-system -z istio-system-oap # SA fo
 oc adm policy add-scc-to-user privileged -n istio-system -z xcp-edge # SA for XCP-Edge
 
 kubectl apply -f "${FOLDER}/cluster1-controlplane.yaml" 
+
+#  k edit clusterrole istio-system-onboarding-operator
+# - apiGroups:
+#  - ""
+#  resources:
+#  - secrets
+#  verbs: ["get"]
+
