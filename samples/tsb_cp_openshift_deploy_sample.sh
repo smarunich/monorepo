@@ -24,6 +24,11 @@ EOF
 ./tctl140 install manifest cluster-operators \
     --registry ${REGISTRY} > ${FOLDER}/clusteroperators.yaml
     
+oc adm policy add-scc-to-user anyuid \
+    system:serviceaccount:istio-system:tsb-operator-control-plane
+oc adm policy add-scc-to-user anyuid \
+    system:serviceaccount:istio-gateway:tsb-operator-data-plane
+    
 kubectl apply -f clusteroperators.yaml
  
 tctl install manifest control-plane-secrets \
@@ -59,6 +64,43 @@ spec:
     port: 8443
     clusterName: cluster1
   components:
+    oap:
+      kubeSpec:
+        overlays:
+          - apiVersion: extensions/v1beta1
+            kind: Deployment
+            name: oap-deployment
+            patches:
+              - path: spec.template.spec.containers.[name:oap].env.[name:SW_RECEIVER_GRPC_SSL_CERT_CHAIN_PATH].value
+                value: /skywalking/pkin/tls.crt
+              - path: spec.template.spec.containers.[name:oap].env.[name:SW_CORE_GRPC_SSL_TRUSTED_CA_PATH].value
+                value: /skywalking/pkin/tls.crt
+        service:
+          annotations:
+            service.beta.openshift.io/serving-cert-secret-name: dns.oap-service-account
+    istio:
+      traceSamplingRate: 100
+      kubeSpec:
+        CNI:
+          binaryDirectory: /var/lib/cni/bin
+          chained: false
+          configurationDirectory: /etc/cni/multus/net.d
+          configurationFileName: istio-cni.conf
+        overlays:
+          - apiVersion: install.istio.io/v1alpha1
+            kind: IstioOperator
+            name: tsb-istiocontrolplane
+            patches:
+              - path: spec.meshConfig.defaultConfig.envoyAccessLogService.address
+                value: oap.istio-system.svc:11800
+              - path: spec.meshConfig.defaultConfig.envoyAccessLogService.tlsSettings.caCertificates
+                value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+              - path: spec.values.cni.chained
+                value: false
+              - path: spec.values.sidecarInjectorWebhook
+                value:
+                  injectedAnnotations:
+                    k8s.v1.cni.cncf.io/networks: istio-cni
     xcp:
       centralAuthMode: JWT
       kubeSpec:
