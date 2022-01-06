@@ -1,0 +1,67 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    tsb.tetrate.io/contentHash: 75a2175697334895
+  creationTimestamp: "2022-01-06T13:27:51Z"
+  labels:
+    app: onboarding-operator
+    platform.tsb.tetrate.io/application: onboarding-operator
+    platform.tsb.tetrate.io/component: onboarding
+    platform.tsb.tetrate.io/plane: control
+  name: istio-system-onboarding-operator
+  resourceVersion: "43348"
+  uid: ba1a1cb7-d1b1-4287-b228-72d8d9556e3a
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  - certificatesigningrequests/status
+  verbs:
+  - update
+  - create
+  - get
+  - delete
+- apiGroups:
+  - certificates.k8s.io
+  resourceNames:
+  - kubernetes.io/legacy-unknown
+  resources:
+  - signers
+  verbs:
+  - approve
+  - sign
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - clusterroles
+  verbs:
+  - '*'
+- apiGroups:
+  - runtime.onboarding.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
