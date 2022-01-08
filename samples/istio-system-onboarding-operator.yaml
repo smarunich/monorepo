@@ -1,17 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations:
-    tsb.tetrate.io/contentHash: 75a2175697334895
-  creationTimestamp: "2022-01-06T13:27:51Z"
   labels:
     app: onboarding-operator
     platform.tsb.tetrate.io/application: onboarding-operator
     platform.tsb.tetrate.io/component: onboarding
     platform.tsb.tetrate.io/plane: control
   name: istio-system-onboarding-operator
-  resourceVersion: "43348"
-  uid: ba1a1cb7-d1b1-4287-b228-72d8d9556e3a
 rules:
 - apiGroups:
   - ""
