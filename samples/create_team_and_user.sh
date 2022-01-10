@@ -52,7 +52,9 @@ EOF
 
 tctl apply -f "${FOLDER}/sample_role.yaml"
 
-# Bind the role https://docs.tetrate.io/service-bridge/1.4.x/en-us/refs/tsb/rbac/v2/tenant_access_bindings
+# Bind the role 
+# https://docs.tetrate.io/service-bridge/1.4.x/en-us/refs/tsb/rbac/v2/tenant_access_bindings
+# https://docs.tetrate.io/service-bridge/1.4.x/en-us/refs/tsb/rbac/v2/workspace_access_bindings
 cat >"${FOLDER}/sample_wab.yaml" <<EOF
 apiVersion: rbac.tsb.tetrate.io/v2
 kind: WorkspaceAccessBindings
