@@ -24,11 +24,11 @@ EOF
 ./tctl140 install manifest cluster-operators \
     --registry ${REGISTRY} > ${FOLDER}/clusteroperators.yaml
     
-oc adm policy add-scc-to-user anyuid \
+oc adm policy add-scc-to-user privileged \
     system:serviceaccount:istio-system:tsb-operator-control-plane
-oc adm policy add-scc-to-user anyuid \
+oc adm policy add-scc-to-user privileged \
     system:serviceaccount:istio-gateway:tsb-operator-data-plane
-    
+
 kubectl apply -f clusteroperators.yaml
  
 tctl install manifest control-plane-secrets \
