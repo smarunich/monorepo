@@ -49,14 +49,14 @@ spec:
         rules:
           - route:
               host: "${APP_NAMESPACE}/productpage.${APP_NAMESPACE}.svc.cluster.local"
-  - name: details
-    port: 9080
-    hostname: details.tetrate.com
-    routing:
-      rules:
-      - route:
-          host: ${APP_NAMESPACE}/details.${APP_NAMESPACE}.svc.cluster.local
-          port: 9080  
+    - name: details
+      port: 9080
+      hostname: details.tetrate.com
+      routing:
+        rules:
+        - route:
+            host: ${APP_NAMESPACE}/details.${APP_NAMESPACE}.svc.cluster.local
+            port: 9080  
 EOF
 
 tctl apply -f "${FOLDER}/bookinfo-ingress-gateway.yaml"
