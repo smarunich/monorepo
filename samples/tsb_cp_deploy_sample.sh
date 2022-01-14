@@ -74,6 +74,10 @@ spec:
             value:
             - name: ISTIO_META_DNS_CAPTURE
               value: "true"
+          - path: spec.meshConfig.defaultConfig.proxyMetadata
+            value:
+            - name: ISTIO_META_DNS_AUTO_ALLOCATE
+              value: "true"
           - path: spec.components.edgeServer.kubeSpec.deployment.env
             value:
             - name: ENABLE_RESTORE_ORIGINAL_NAMES
