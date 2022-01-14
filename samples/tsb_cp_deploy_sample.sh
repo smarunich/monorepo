@@ -66,14 +66,10 @@ spec:
             kind: IstioOperator
             name: tsb-istiocontrolplane
             patches:
-            - path: spec.meshConfig.defaultConfig.proxyMetadata
-              value:
-              - name: ISTIO_META_DNS_CAPTURE
-                value: "true"
-            - path: spec.meshConfig.defaultConfig.proxyMetadata
-              value:
-              - name: ISTIO_META_DNS_AUTO_ALLOCATE
-                value: "true"           
+            - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_DNS_CAPTURE
+              value: "true"
+            - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_DNS_AUTO_ALLOCATE
+              value: "true"      
     xcp:
       centralAuthMode: JWT
       kubeSpec:
