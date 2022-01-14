@@ -59,6 +59,21 @@ spec:
     port: 8443
     clusterName: cluster1
   components:
+    istio:
+      kubeSpec:
+        overlays:
+          - apiVersion: install.istio.io/v1alpha1
+            kind: IstioOperator
+            name: tsb-istiocontrolplane
+            patches:
+            - path: spec.meshConfig.defaultConfig.proxyMetadata
+              value:
+              - name: ISTIO_META_DNS_CAPTURE
+                value: "true"
+            - path: spec.meshConfig.defaultConfig.proxyMetadata
+              value:
+              - name: ISTIO_META_DNS_AUTO_ALLOCATE
+                value: "true"           
     xcp:
       centralAuthMode: JWT
       kubeSpec:
@@ -70,14 +85,6 @@ spec:
           # changed from a bare IP address as it's difficult to generate a cert with the IP
           # address in the SANs as the IP isn't known until after the service is deployed.
           patches:
-          - path: spec.meshConfig.defaultConfig.proxyMetadata
-            value:
-            - name: ISTIO_META_DNS_CAPTURE
-              value: "true"
-          - path: spec.meshConfig.defaultConfig.proxyMetadata
-            value:
-            - name: ISTIO_META_DNS_AUTO_ALLOCATE
-              value: "true"
           - path: spec.components.edgeServer.kubeSpec.deployment.env
             value:
             - name: ENABLE_RESTORE_ORIGINAL_NAMES
