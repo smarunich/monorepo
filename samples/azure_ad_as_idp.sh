@@ -1,6 +1,6 @@
 export FOLDER='.'
 export TSB_FQDN="ms-station.cx.tetrate.info"
-export AZURE_TENANT_ID="1076231c-4971-42f2-8c33-aa8680e81ea8"                 
+export AZURE_TENANT_ID="6a15254b-eb29-4152-ad3b-c755c8cff62f"                 
 
 cat >"${FOLDER}/requireResourceManifest.json" <<EOF
 [
@@ -69,6 +69,8 @@ spec:
       azure:
         clientId: ${TSB_APP_ID}
         tenantId: ${AZURE_TENANT_ID}
+        groupsFilter: startswith(displayName,'ms-')
+      ignoreOrphanUsers: true
 EOF
   
 kubectl -n tsb patch managementplane/managementplane --patch "$(cat "$FOLDER"/managementplane_oidc_patch.yaml)" --type=merge
