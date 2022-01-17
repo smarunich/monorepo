@@ -12,10 +12,12 @@ az ad app permission admin-consent --id  <appID>
 
 az ad app permission grant --id <appID> --api 00000002-0000-0000-c000-000000000000
 
+# In order to use the TSB token, a user record must be created in TSB with a user ID matching the subject claim from the AzureAD Service Principal, which is also the same as the Client ID from the AzureAD App Registration screen. In addition, the AzureAD App Registration must also set accessTokenAcceptedVersion=2 in the App Manifest. This enables TSB to perform token checks required for the token exchange grant.
+
 #tctl install manifest management-plane-secrets --allow-defaults --tsb-admin-password <TSB_Admin_Pass>   \
     --oidc-client-secret=<Client_Secret> \
     --teamsync-azure-client-secret=<Client_Secret> > secret.yaml
-    
+ 
 #kubectl apply -f secret.yaml
 
 tctl edit managementplane managementplane -n tsb
