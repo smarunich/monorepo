@@ -69,3 +69,34 @@ spec:
               number: 9443
 EOF
 
+
+
+cat >"${FOLDER}/kubectl-tier1-mp.yaml" <<EOF
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: mp-serviceentry
+  namespace: istio-system
+spec:
+  endpoints:
+  - address: 52.188.177.111
+    ports:
+      tls-8443: 8443
+  - address: 52.188.177.111
+    ports:
+      tls-9443: 9443
+  exportTo:
+  - '*'
+  hosts:
+  - ms-station.cx.tetrate.info
+  location: MESH_EXTERNAL
+  ports:
+  - name: tls-8443
+    number: 8443
+    protocol: TLS
+  - name: tls-9443
+    number: 9443
+    protocol: TLS
+  resolution: STATIC
+EOF
