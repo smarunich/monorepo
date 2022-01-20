@@ -245,6 +245,12 @@ spec:
           annotations:
             service.beta.kubernetes.io/azure-load-balancer-internal: "true"
           type: LoadBalancer
+    centralServer:
+      kubeSpec:
+        deployment:
+          env:
+            - name: ENABLE_CLUSTER_SCOPED_PUSH_CONTEXT
+              value: true
     xcp:
       centralAuthModes:
         jwt: true
