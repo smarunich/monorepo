@@ -1,5 +1,5 @@
 export FOLDER='.'
-
+export REGISTRY='localhost:32000'
 
 cat >"${FOLDER}/tctl-deployment.yaml" <<EOF
 apiVersion: apps/v1
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: tctl
-        image: mstsbacrx9pslvvlqec0jpg3.azurecr.io/tctl:1.4.0
+        image: $REGISTRY/tctl:1.4.0
         command: ["/bin/sh"]
         args: ["-c", "while true; do echo hello; sleep 10;done"]
 EOF
