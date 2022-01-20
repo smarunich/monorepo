@@ -249,19 +249,16 @@ spec:
       centralAuthModes:
         jwt: true
         mutualTls: false
-      components:
-       centralServer:
-         kubeSpec:
-           deployment:
-             env:
-               - name: ENABLE_CLUSTER_SCOPED_PUSH_CONTEXT
-                 value: "true"
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
           kind: CentralXcp
           name: central-xcp
           patches:
+          - path: spec.components.centralServer.kubeSpec.deployment.env
+            value:
+            - name: ENABLE_CLUSTER_SCOPED_PUSH_CONTEXT
+              value: "true"
           - path: spec.components.centralServer.kubeSpec.service.annotations
             value:
               service.beta.kubernetes.io/azure-load-balancer-internal: "true"
