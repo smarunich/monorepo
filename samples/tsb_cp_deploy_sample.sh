@@ -59,12 +59,6 @@ spec:
     port: 8443
     clusterName: cluster1
   components:
-    centralServer:
-      kubeSpec:
-        deployment:
-          env:
-            - name: ENABLE_CLUSTER_SCOPED_PUSH_CONTEXT
-              value: true
     istio:
       kubeSpec:
         overlays:
