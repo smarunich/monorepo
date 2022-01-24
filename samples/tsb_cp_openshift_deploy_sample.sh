@@ -101,6 +101,12 @@ spec:
                 value:
                   injectedAnnotations:
                     k8s.v1.cni.cncf.io/networks: istio-cni
+              - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_DNS_CAPTURE
+                value: "true"
+              - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_DNS_AUTO_ALLOCATE
+                value: "true"      
+              - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_PROXY_XDS_VIA_AGENT
+                value: "true"  
     xcp:
       centralAuthMode: JWT
       kubeSpec:
