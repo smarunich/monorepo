@@ -1,8 +1,6 @@
 export FOLDER='.'
 
 cat >"${FOLDER}/oc_networkattach.yaml" <<EOF
-
-EOF
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
