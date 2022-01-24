@@ -13,12 +13,20 @@ spec:
   selector:
     app: tier1-direct
   servers:
-  - port:
-      number: 80
-      name: http
-      protocol: HTTP
-    hosts:
+  - hosts:
     - bookinfo-direct.tetrate.com
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+  - hosts:
+    - bookinfo-direct.tetrate.com
+    port:
+      name: mtls-multicluster
+      number: 15443
+      protocol: HTTPS
+    tls:
+      mode: ISTIO_MUTUAL
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
