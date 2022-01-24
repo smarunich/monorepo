@@ -1,4 +1,5 @@
 export FOLDER='.'
+export APP_NS='bookinfo'
 
 cat >"${FOLDER}/oc_networkattach.yaml" <<EOF
 apiVersion: "k8s.cni.cncf.io/v1"
