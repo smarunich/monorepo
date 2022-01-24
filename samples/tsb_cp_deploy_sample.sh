@@ -70,6 +70,8 @@ spec:
               value: "true"
             - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_DNS_AUTO_ALLOCATE
               value: "true"      
+            - path: spec.meshConfig.defaultConfig.proxyMetadata.ISTIO_META_PROXY_XDS_VIA_AGENT
+              value: "true"   
     xcp:
       centralAuthMode: JWT
       kubeSpec:
