@@ -1,0 +1,14 @@
+uid: zack
+userpassword: zack-pass
+
+uid: nacx
+userpassword: nacx-pass
+
+uid: wusheng
+userpassword: wusheng-pass
+
+uid: LunnM
+userPassword: Password1
+
+uid: ReznechC
+userPassword: Password1
