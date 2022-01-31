@@ -44,5 +44,5 @@ spec:
               vm_config:
                 code:
                   local:
-                    filename: "/etc/wasm_filter.wasm"
+                    filename: "/etc/wasm_header.wasm"
                 runtime: envoy.wasm.runtime.v8
