@@ -1,7 +1,7 @@
 export NAMESPACE="bookinfo"
 export FOLDER="."
 
-wasm_image=1.9.0.wasm
+wasm_image=wasm_header.wasm
 kubectl -n $NAMESPACE create configmap wasm_header --from-file=$wasm_image
 
 
