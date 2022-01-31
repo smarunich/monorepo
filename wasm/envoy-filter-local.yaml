@@ -42,9 +42,9 @@ spec:
           value:
             config:
               vm_config:
-              code:
-                local:
-                  filename: /var/local/lib/wasm-filters/wasm_header.wasm
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters/wasm_header.wasm
               runtime: envoy.wasm.runtime.v8
               vmId: wasm_header
 
