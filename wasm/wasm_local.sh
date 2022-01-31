@@ -2,7 +2,7 @@ export NAMESPACE="bookinfo"
 export FOLDER="."
 
 wasm_image=1.9.0.wasm
-kubectl -n $NAMESPACE create configmap wasm-header --from-file=$wasm_image
+kubectl -n $NAMESPACE create configmap wasm_header --from-file=$wasm_image
 
 
 
@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/userVolume: '[{"name":"wasmfilters-dir","configMap": {"name":"wasm_header"}}]'
+        sidecar.istio.io/userVolume: '[{"name":"wasmfilters-dir","configMap": {"name":"wasm_header.wasm"}}]'
         sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/lib/wasm-filters","name":"wasmfilters-dir"}]'
 ```
 
