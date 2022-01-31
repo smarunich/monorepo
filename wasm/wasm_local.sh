@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/userVolume: '[{"name":"wasmfilters-dir","configMap": {"name":"wasm_header.wasm"}}]'
+        sidecar.istio.io/userVolume: '[{"name":"wasmfilters-dir","configMap": {"name":"wasm_header"}}]'
         sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/lib/wasm-filters","name":"wasmfilters-dir"}]'
 ```
 
