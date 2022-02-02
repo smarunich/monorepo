@@ -46,5 +46,5 @@ spec:
                 code:
                   local:
                     filename: /var/local/lib/wasm-filters/http-routing.wasm
-              runtime: envoy.wasm.runtime.v8
-              vmId: http-routing
+                runtime: envoy.wasm.runtime.v8
+                vmId: http-routing
