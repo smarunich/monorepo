@@ -45,6 +45,6 @@ spec:
                 code:
                   local:
                     filename: /var/local/lib/wasm-filters/wasm_header.wasm
-              runtime: envoy.wasm.runtime.v8
+                runtime: envoy.wasm.runtime.v8
               vmId: wasm_header
 
