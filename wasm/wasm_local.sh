@@ -34,6 +34,7 @@ spec:
       annotations:
         sidecar.istio.io/userVolume: '[{"name":"wasmfilters-dir","configMap": {"name":"wasm-plugins"}}]'
         sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/lib/wasm-filters","name":"wasmfilters-dir"}]'
+        sidecar.istio.io/logLevel: info
 EOF
 
 patch_annotations=$(cat ${FOLDER}/wasm-plugins-patch-annotations.yaml)
