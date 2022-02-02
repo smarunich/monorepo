@@ -1,0 +1,50 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: http_routing
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: http_routing-config
+        config_discovery:
+          config_source:
+            ads: {}
+            initial_fetch_timeout: 0s
+          type_urls: [ "type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm"]
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: http_routing-config
+spec:
+  configPatches:
+  - applyTo: EXTENSION_CONFIG
+    match:
+      context: SIDECAR_INBOUND
+    patch:
+      operation: ADD
+      value:
+        name: http_routing-config
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              vm_config:
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters/http_routing.wasm
+              runtime: envoy.wasm.runtime.v8
+              vmId: http_routing
