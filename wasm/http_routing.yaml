@@ -15,7 +15,7 @@ spec:
             subFilter:
               name: envoy.filters.http.router
     patch:
-      operation: INSERT_BEFORE
+      operation: INSERT_FIRST
       value:
         name: http-routing-config
         config_discovery:
