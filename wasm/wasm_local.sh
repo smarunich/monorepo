@@ -22,7 +22,12 @@ kubectl -n $NAMESPACE patch deployment ratings-v1 -p "$patch_annotations"
 
 # multiple filters using common configmap
 
-cat >"${FOLDER}/wasm-patch-annotations.yaml" <<EOF
+k -n $NAMESPACE create configmap wasm_plugins --from-file  http_routing.wasm --from-file http_headers.wasm --from-file wasm_header.wasm
+k -n $NAMESPACE apply -f http_routing.yaml
+k -n $NAMESPACE apply -f http_headers.yaml
+k -n $NAMESPACE apply -f envoy-filter-local.yaml
+
+cat >"${FOLDER}/wasm-plugins-patch-annotations.yaml" <<EOF
 ```
 spec:
   template:
@@ -32,7 +37,7 @@ spec:
         sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/lib/wasm-filters","name":"wasmfilters-dir"}]'
 ```
 
-patch_annotations=$(cat patch-annotations.yaml)
+patch_annotations=$(cat ${FOLDER}/wasm-plugins-patch-annotations.yaml)
 kubectl -n $NAMESPACE patch deployment productpage-v1 -p "$patch_annotations"
 kubectl -n $NAMESPACE patch deployment reviews-v1 -p "$patch_annotations"
 kubectl -n $NAMESPACE patch deployment reviews-v2 -p "$patch_annotations"
