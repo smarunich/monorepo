@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: http_routing
+  name: http-routing
 spec:
   configPatches:
   - applyTo: HTTP_FILTER
@@ -17,7 +17,7 @@ spec:
     patch:
       operation: INSERT_BEFORE
       value:
-        name: http_routing-config
+        name: http-routing-config
         config_discovery:
           config_source:
             ads: {}
@@ -27,7 +27,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: http_routing-config
+  name: http-routing-config
 spec:
   configPatches:
   - applyTo: EXTENSION_CONFIG
@@ -36,7 +36,7 @@ spec:
     patch:
       operation: ADD
       value:
-        name: http_routing-config
+        name: http-routing-config
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
           type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
@@ -45,6 +45,6 @@ spec:
               vm_config:
                 code:
                   local:
-                    filename: /var/local/lib/wasm-filters/http_routing.wasm
+                    filename: /var/local/lib/wasm-filters/http-routing.wasm
               runtime: envoy.wasm.runtime.v8
-              vmId: http_routing
+              vmId: http-routing
