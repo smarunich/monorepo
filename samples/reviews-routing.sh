@@ -5,6 +5,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: reviews
+  namespace: bookinfo-bridged
   annotations:
     tsb.tetrate.io/trafficGroup: bookinfo-direct-traffic-group
     tsb.tetrate.io/organization: tetrate
@@ -33,6 +34,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: reviews
+  namespace: bookinfo-bridged
   annotations:
     tsb.tetrate.io/trafficGroup: bookinfo-direct-traffic-group
     tsb.tetrate.io/organization: tetrate
