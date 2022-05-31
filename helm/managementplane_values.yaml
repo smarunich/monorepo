@@ -1,0 +1,155 @@
+USER-SUPPLIED VALUES:
+image:
+  registry: ea0t1sand15tsbacrg1xujwvaik16hfqi.azurecr.io
+  tag: 1.5.0-EA0
+secrets:
+  elasticsearch:
+    cacert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDLjCCAhagAwIBAgIRALAMHcnO3og4OC9dzdMWSSIwDQYJKoZIhvcNAQELBQAw
+      ITEMMAoGA1UECxMDdHNiMREwDwYDVQQDEwh0c2ItaHR0cDAeFw0yMjA1MzAyMzU1
+      MDJaFw0yMzA1MzEwMDA1MDJaMCExDDAKBgNVBAsTA3RzYjERMA8GA1UEAxMIdHNi
+      LWh0dHAwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5iycG/m+MDt7m
+      6/n6k7ewijSgn1YSZC1qnoNwKrYkFukj9j8MCD3Q5eSywXhXl6XDvLde6PhIAG8n
+      buwcLDSHCjvgdd3ySJ9IbWhoS3aBP3nTlZX4Ijx+oZySg0zHCmMaLDujkzxMlyJv
+      vcDrN6xT3+LsJ8zt6nkNr622StuMAFD/0acDW+yzqPuEewB8uCFD04pM/bYgZQKr
+      XPsjLfBSOWjXk184E4KwplfZszswRAnsch7mY9cwEpB1d3l13WQjq3z6os0i6768
+      az3Cpscs3N6thLF2diK2HNTt3o3sbnlgvs8wzsu0lHuQhGZw02OLL4rWD68UrI9c
+      wBB0gK4tAgMBAAGjYTBfMA4GA1UdDwEB/wQEAwIChDAdBgNVHSUEFjAUBggrBgEF
+      BQcDAQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUj8aOglqp
+      vexKRoyoLv6PRxtObsswDQYJKoZIhvcNAQELBQADggEBAKZIfWOu4+CTe+daf8cJ
+      D658TJcXjSoxQ5K4hnV7fsSdjZEX84R43G1avZgABgmc9jT8QC2KqheM+hK83mMs
+      y+IAODFDmTpe5fno6Ww0oJAhuRELijJv7T58eA/dLQJb1pJ+SnZtrv7Hj86j9ih5
+      FaPUyvS+ttQwc30oYn5MrM7unSo/PeuDYf2OHAlvP8tcAdiGgecLwHlAPlL3OGIX
+      s9nqdRLDwzXRr6djsdvIl6ek3OMIr/HqDrRpmCrmXaN5cdIZRpVX2uyS12Q4CUAe
+      nTN11YHEdSDA5dBQvM75gUTIHhq6ngzWdDPJpBl1Hv3xTHI0jpTDdpmhSb5a8AJp
+      ilw=
+      -----END CERTIFICATE-----
+    password: B602Xlgo700201hqtqR0YDEa
+    username: elastic
+  ldap:
+    binddn: cn=admin,dc=tetrate,dc=io
+    bindpassword: admin
+  postgres:
+    password: tsb-postgres-password
+    username: tsb
+  tsb:
+    adminPassword: Tetrate123
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDJTCCAg2gAwIBAgIQZ7lgY7EFKXX/GJV5UC6ymzANBgkqhkiG9w0BAQsFADAv
+      MRUwEwYDVQQKEwxjZXJ0LW1hbmFnZXIxFjAUBgNVBAMTDXNlbGZzaWduZWQtY2Ew
+      HhcNMjIwNTMxMDAwNzExWhcNMjQxMTE2MDAwNzExWjAAMIIBIjANBgkqhkiG9w0B
+      AQEFAAOCAQ8AMIIBCgKCAQEAzj+n3vu+8tw0w3faOCMW/SxxmaRTseOj7wYrKYTH
+      SMC5DxHK7jf0rSsCUgnqXMwJdw4S6OhYSPwLkpmekOHu9iAl2pnC+ArCI9MdWX8S
+      FsrhsulGSF4viINQUN54DZMEROqlKVM4CNNLpO0t0G5STgeRlW3IqW7GL2P3pSeR
+      lZ8SGQLwqgo840jV1OCqKVSV60uoVWy2U0l11PKfy2D0i7ZC8pReSiIpcTbI4Mf3
+      8bn/ASFMIsJXKlsHtY7CMwLlE6vBEFUdsWXg5IIxDC5wbaq1tq1oXJHhDD8munoq
+      kwlRzDmZwsYdot8IwMCAu2ua7XQqevFGDVsJu+J45uLcRwIDAQABo2wwajAOBgNV
+      HQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQuHUUghfaF+bG9
+      39hWJF1de7klnzApBgNVHREBAf8EHzAdghtlYTB0MXNhbmQxNS5jeC50ZXRyYXRl
+      LmluZm8wDQYJKoZIhvcNAQELBQADggEBAA/IYygZrIehqwAnNp2T38Yv+AnSI2u6
+      sWDMO+Of21H+OotZTEGbF9IbTHDKX/dACdDxaCt09txKqY9sB/Vb3Bj9f66QTWpb
+      fZ5Fhp80FtdyWUyubcuX9krT/xn9wr8pf6snOsX2wM3RoIHWlY8aXgHzpKVwcmk3
+      v/n2DegGmY49xiTvRUINVvTJW0iniAvFyuZ4u7Khw4IYH5DsGd6UbLPlANRKO5Vf
+      Mb3HeAPLQpuhEKoPsoGUmLYMwbdWmBU57VNYre+LIKvYnrb3WQI9MZp88Sdry7BX
+      /fXQAo2GB+CGkmgazQg71UuQwQwjb4siPz8/Si4BQ1r3n6p4e43cIlM=
+      -----END CERTIFICATE-----
+    key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAzj+n3vu+8tw0w3faOCMW/SxxmaRTseOj7wYrKYTHSMC5DxHK
+      7jf0rSsCUgnqXMwJdw4S6OhYSPwLkpmekOHu9iAl2pnC+ArCI9MdWX8SFsrhsulG
+      SF4viINQUN54DZMEROqlKVM4CNNLpO0t0G5STgeRlW3IqW7GL2P3pSeRlZ8SGQLw
+      qgo840jV1OCqKVSV60uoVWy2U0l11PKfy2D0i7ZC8pReSiIpcTbI4Mf38bn/ASFM
+      IsJXKlsHtY7CMwLlE6vBEFUdsWXg5IIxDC5wbaq1tq1oXJHhDD8munoqkwlRzDmZ
+      wsYdot8IwMCAu2ua7XQqevFGDVsJu+J45uLcRwIDAQABAoIBAQCNHGJXnrhDY0Q6
+      ZHsKI3/sEgdbTmHw+MXFmNvZGT5b2XgEBnFoUSJ3hFCfHqeZfAQRz7BCaA1XShME
+      51Pk3p/nB5G+oasSmBHB/wQ6okUXERIgnZf3lXFCHk3KNpu+9dJa8Iu13XkeGKrN
+      mXTaAVEQj/8cVLOQsPipneTmu07RJXtqrZbB+nrogB8dgqkg7un379KnILIfEF/e
+      976X4rnkbuxCjQPRWQu/Rw0OoZmBvU+rLPsWXF7oz+o4vHNUnjerIDu/FMChVXt7
+      li+BVPRCv8v60sjBpBvnQK4SZ7WawReUwVuZCkk3lhFNUSydutO51umiJoJ80gLd
+      uHpT3eMRAoGBAM+m+6gsdyJUTU2ltwwAIXU9/svjP/jgdeEnXhoLS/JihYOvh44u
+      Qe36xHQH6njA72qjFEal57wXdKuwX/VdZMwM1JCypokgMZU62OZD/SMF4o2JV015
+      HN8wSfPLNplJLWf4Rsd3cMqJNHfCIGsdAm+VTKwElZO5uGouX3r8D63PAoGBAP5F
+      Aq3Q872CGic5my8SRs1xEuh/pwg7A91lSQlRYd/NI+LCfegaYvU7BP2MPJuHmj3+
+      fBDtXtld++rqPJljLUqdqgR+Z6e4sem4EtEehrdPJsvNcyIzIChzvgoW9klDShKd
+      u7OjgL+Ju5kQvnVY8WtmKUornGthgBVsUkv9fkAJAoGANCs+lGy/bYeCeFyG1WP/
+      A+aUagLo4oz58JwkXySxau7nnkLuKoFinPhgfMo0VSwbuk3IXUt3IeE+tZe1M/7H
+      wSAEE2pevpqw+k3zij5QjYj/9xEnNtaTs1r9aVuHlxE0cCeHGLvgQXIhFWlXHbIH
+      F6OJxLnOHnQNadfGsy46fi8CgYBDHsx6PbJZ0EI/IIHKhzSRfsvS+/+HuKxogRgq
+      kYUYovpaHaVG49BDk/TZSW+mTsF0o/z0KvTixGB/vp2IkBmgnMYIsaWDLMoqPCEb
+      esdtFEPVgMJnwL84bnU4DJ+u70haabDm1r5h0WXoHfdo2rW/+BPmNGTyI6bAAPwo
+      ex4coQKBgDO+YGR2zLUmh+7/jTKVf+gTS3AGt3VMtqSZP1usUXhmR+iuiM5+xvhq
+      cnbYsK2uMRAF1o5flw8Ho75RUSFwYcn4L7rgZxZwwTXMdCtHTv5oan1QKk6iK/JF
+      X8hK/EsZ1i4qT3dYPKyE1yUqfZLsNqTTG0zhJEa1sH0qS5/8FV17
+      -----END RSA PRIVATE KEY-----
+  xcp:
+    autoGenerateCerts: true
+    central:
+      additionalDNSNames:
+      - ea0t1sand15.cx.tetrate.info
+    rootca: |
+      -----BEGIN CERTIFICATE-----
+      MIIDKjCCAhKgAwIBAgIQP7a07wBIPpXK/cmmSmUxkTANBgkqhkiG9w0BAQsFADAv
+      MRUwEwYDVQQKEwxjZXJ0LW1hbmFnZXIxFjAUBgNVBAMTDXNlbGZzaWduZWQtY2Ew
+      HhcNMjIwNTMxMDAwMjQzWhcNMjQxMTE2MDAwMjQzWjAvMRUwEwYDVQQKEwxjZXJ0
+      LW1hbmFnZXIxFjAUBgNVBAMTDXNlbGZzaWduZWQtY2EwggEiMA0GCSqGSIb3DQEB
+      AQUAA4IBDwAwggEKAoIBAQC9uZZC/U9WetgSCt+HbDE6VmcyDVbpXxrJI/ZFUqD7
+      ZTpicSnYAYofB4bVH5Ba+Y95ZPijs96RjpNmEPqs5kFT+6NxyhAjJTc5qrVBdASp
+      x9C/xMOc1VwRBegx/7a9xJoBqRizRtUJrDo297wWgUhTsjVp5OVDUsRt9dgUlrvG
+      2pq0kxdwamkdT5BEq9TPoOMVmEWwXGmQV6g95mBw8/VnfcO1pv7yz3kQxNzny3Bd
+      ZhdVFhW5El54SiEKI1FzDM1prJFD4yeBPZ4bUqNfChjbujHniyfj4myxfMZFvb2o
+      WWl5Qb983BA/khBBkxgzoNgtvBIY+9Zpq2Zhxtpa7EXRAgMBAAGjQjBAMA4GA1Ud
+      DwEB/wQEAwICpDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQuHUUghfaF+bG9
+      39hWJF1de7klnzANBgkqhkiG9w0BAQsFAAOCAQEADn0jZrPAbJqdA4O8cKryITRd
+      PKy+8+8E1x1765Jw+HqRHb0K+x54GnIMKDlDcexpZkrcRR7pkkeQ4Sx9MPIFSnd3
+      BezfTjOcBfIzB3gj0pMbfL2kViHhEv5qM576ScJrgNHqFhHe8wCpoxP+vNDzI7jt
+      wUy5zaH5h9JBXPwo6j/TSPSiUjt00d083+ACzRlWNJXYVngwOtb/t23MZ6prV/8h
+      4BFF0GlpwM+1EGlOERjKgBTc+Ir9v1HZZCVtgal0aAGczFTxvOBghu7Nwfz5e5IG
+      TLKxAFhox3XbRep+1d/tn6yHqU5Yp6VUEzyLZ48CZ6gDEqM7wrCLBoKJ+SchvQ==
+      -----END CERTIFICATE-----
+    rootcakey: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAvbmWQv1PVnrYEgrfh2wxOlZnMg1W6V8aySP2RVKg+2U6YnEp
+      2AGKHweG1R+QWvmPeWT4o7PekY6TZhD6rOZBU/ujccoQIyU3Oaq1QXQEqcfQv8TD
+      nNVcEQXoMf+2vcSaAakYs0bVCaw6Nve8FoFIU7I1aeTlQ1LEbfXYFJa7xtqatJMX
+      cGppHU+QRKvUz6DjFZhFsFxpkFeoPeZgcPP1Z33Dtab+8s95EMTc58twXWYXVRYV
+      uRJeeEohCiNRcwzNaayRQ+MngT2eG1KjXwoY27ox54sn4+JssXzGRb29qFlpeUG/
+      fNwQP5IQQZMYM6DYLbwSGPvWaatmYcbaWuxF0QIDAQABAoIBADBXqJT7LIsRlBrM
+      0HYWOFjwCS10vq+KPy3/TtINIt3LxlutEAdtJP+REGcfus2jh05cTwqPW2flV2OL
+      cgQ6S20V0mi9Hu2FnxO/jp3V7RZBxswGW/2LVAE2axrKWIr0HHXN23Ba3Q+w5ch5
+      yWBGouJIp1mLLGvCHDEUknF0kvYw7jrfU5T+GCQhpWNB4eRLM6ErX44KTUfJHTq4
+      /kX58ekqfDMw8g+wSk+F3KnPBgmRJWw2nSNO/k8ty8EAjhBmSSEW7dzVjdh7s9s9
+      Le6+rFjpXqb2FAn5lW0pFoyK7emXdNQHnARs3qnxohBdM5HKqecvikQjvVpv0bCQ
+      +dolds0CgYEAwcqPLL8u3/8cX9NmYAucoESDpLa8NSht9g/0w+XOOUpUj2pz4jmP
+      Gg+IwMBMRlTEedRhd/rQaKweUL4+AtAtand1LtJP1SRBB7P6oJ30CnK0NHDpfMSc
+      OUtwFWEDyCYWkRdC30QjchiFdEHHPPFM6rJ5VceeeL3Q7J8pkcfxsW8CgYEA+qDd
+      uN00Z63g34P4V7ZPWYu5+Eo4G3pB1FZ5PQVrD1sDMeg9mB9cZRQWn+hXQwssXpzO
+      KpVerfj+xj4vjPRVDbBXYSjXo2X+EcB5Lsya8ARG+1PSFNa8umqIkF5JvAsERqlG
+      TH+n7+V2PBfYbaXZKumCVXzDu9uS6XsyIkb7XL8CgYBd/kxhbL1kocz2YYe3MAqg
+      5Xpgas1wjxJ+lZCnb5AN05KeGQjqAfb5se0naF3Wgwjk+nDoC7wH+OufSBa1sJlG
+      mXg55IIaJEJyZQY730DdzHLBOL7W6FnJpGBRzkNSUb8CUqD5v4fdsC0SjVEAqx0e
+      fMBDLdYcRBzQmAZGkg8VewKBgQCZJhm2sD0oqcDC9JKZjobYciB2z2uPptp5FUpK
+      dnggTv4Zzg9tWKSOA4N7vW8tQbOgMPNuZA4SAxg0LaXC3T7n+Xy7m0iByX5CfLnQ
+      VijLR+HUDDlQkJOM2jKO/X7TEGxRfXi+oDcPycjBGdUf03tr1HrXIEE/FwKj96r/
+      9R3+YwKBgCZjgsMOJzu5VZh8jtfZUftmidVlo4WhRO0uCasFuA6iSguTLYmJolpe
+      QRN21zWOw7sgj45JLdROPRs4NN/1QaSvT9bfBuvRKrsJbBpDcCv1Tg8Uzf3h/YOC
+      ilJY2plbZOUgptLKT0igtJVOkAeJV2w2xWwbG50Io/Su6mC7Pumu
+      -----END RSA PRIVATE KEY-----
+spec:
+  components:
+    internalCertProvider:
+      certManager:
+        managed: EXTERNAL
+    xcp:
+      centralAuthModes:
+        jwt: true
+  hub: ea0t1sand15tsbacrg1xujwvaik16hfqi.azurecr.io
+  organization: tetrate
+  telemetryStore:
+    elastic:
+      host: 20.81.56.213
+      port: 9200
+      protocol: https
+      selfSigned: true
+      version: 7
