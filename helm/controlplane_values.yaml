@@ -28,7 +28,7 @@ secrets:
       nTN11YHEdSDA5dBQvM75gUTIHhq6ngzWdDPJpBl1Hv3xTHI0jpTDdpmhSb5a8AJp
       ilw=
       -----END CERTIFICATE-----
-    password: B602Xlgo700201hqtqR0YDEa
+    password: hidden
     username: elastic
   tsb:
     cacert: |
