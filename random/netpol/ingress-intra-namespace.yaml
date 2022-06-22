@@ -1,0 +1,21 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+    tsb.tetrate.io/contentHash: d406938a119aada4
+  labels:
+    install.tetrate.io/owner-kind: ManagementPlane
+    install.tetrate.io/owner-name: managementplane
+    install.tetrate.io/owner-namespace: tsb
+    install.tetrate.io/owner-version: v1alpha1
+  name: ingress-intra-namespace
+  namespace: tsb
+spec:
+  ingress:
+  - ports:
+    - port: 443
+      protocol: TCP
+  policyTypes:
+  - Ingress
+  - Egress
