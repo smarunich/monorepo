@@ -25,6 +25,7 @@ tctl install cluster-service-account --cluster ea1p4d2 > ea1p4d2-service-account
 #     --cluster-service-account="$(cat ea1p4d2-service-account.jwk)"
 #     > ea1p4d2-service-account-secrets.yaml
 
-helm install tsb-controlplane --debug --create-namespace -n istio-system -f cp-helm-values-no-secrets-provided.yaml tetrate-tsb-helm/controlplane --version 1.5.0-EA1 --devel
+kubectl create ns istio-system
 kubectl apply -f cp-secrets.yaml
-helm install tsb-dataplane --debug --create-namespace -n istio-gateway -f dp-helm-values-no-secrets-provided.yaml tetrate-tsb-helm/controlplane --version 1.5.0-EA1 --devel
+helm install tsb-controlplane --debug -n istio-system -f cp-helm-values-no-secrets-provided.yaml tetrate-tsb-helm/controlplane --version 1.5.0-EA1 --devel
+helm install tsb-dataplane --debug --create-namespace -n istio-gateway -f dp-helm-values-no-secrets-provided.yaml tetrate-tsb-helm/dataplane --version 1.5.0-EA1 --devel
