@@ -1,0 +1,27 @@
+# fields for 'req_distinguished_name' in this CNF are just example
+[ req ]
+encrypt_key        = no
+utf8               = yes
+default_bits       = 4096
+default_md         = sha256
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = req_ext
+[ req_distinguished_name ]
+countryName         = US
+stateOrProvinceName = CA
+organizationName    = Example
+commonName          = XCP Central
+# you will have to use 'extendedKeyUsage = serverAuth, clientAuth' because it will be checked by the TSB.
+[ req_ext ]
+basicConstraints = critical, CA:false
+keyUsage         = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName   = @alt_names
+# you will have to use the following DNS name and URI because it will be checked by the TSB
+[ alt_names ]
+DNS.1 = xcp.tetrate.io
+URI.1 = spiffe://xcp.tetrate.io/central
+DNS.2 = ea1p4demo.cx.tetrate.info
+DNS.3 = ea1p4demo.cx.tetrate.info:9443

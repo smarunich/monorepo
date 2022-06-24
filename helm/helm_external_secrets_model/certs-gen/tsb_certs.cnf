@@ -1,0 +1,23 @@
+# all the fields in this CNF are just example, Client should follow its own PKI practice to configue it properly
+[ req ]
+encrypt_key        = no
+utf8               = yes
+default_bits       = 4096
+default_md         = sha256
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = req_ext
+[ req_distinguished_name ]
+countryName         = US
+stateOrProvinceName = CA
+organizationName    = Example
+commonName          = Example TSB Envoy GUI
+[ req_ext ]
+subjectKeyIdentifier = hash
+basicConstraints     = critical, CA:false
+keyUsage             = digitalSignature, keyEncipherment
+extendedKeyUsage     = serverAuth, clientAuth
+subjectAltName       = @alt_names
+[ alt_names ]
+DNS.1 = ea1p4demo.cx.tetrate.info
