@@ -2,7 +2,7 @@
 
 ## basic auth examples https://docs.tetrate.io/service-bridge/1.5.0.dev/en-us/reference/rest-api/guide
 
-```
+```sh
 curl -k -X GET -H"x-tetrate-token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTY0MzU5NzMsImlhdCI6MTY1NjQzMjM3MywiaXNzIjoiaHR0cHM6Ly9kZW1vLnRldHJhdGUuaW8iLCJqdGkiOiI2ZmIwNDFiZC1mYmY5LTQ5NTktODJkOC0xMzdmNTI3ZGE2NjAiLCJzdWIiOiJhZG1pbiIsInRva2VudHlwZSI6ImJlYXJlciJ9.nj2zPAYdhkZYr0q4mZpr2zXmkY_axI30yvhzwhQyeEwE4_jUMJDp8e1Xp8LAbzAyIYB8NBXWL9qBLQbCJyxvyeaXJdzWgB7WH0wZKnCqljxAq0AKZFwb5AdIOzcBjXWa3sC7apeXMyotRclJGc_IBXZTWfLplkYgA6GPsJqhCDQyRQ5Rb8LbZTLyIxaRUWueffNpt-8xEULpxoP4h8P7Jo5siS2jMLNBXCvx-SFqkXbOjbLUoKVP1Kt8lo73x15xRZZ9qEZsoOnqY72qjHezy0M4eFAu2W1d7kId_5npgJOtauS4dzRXSi203ceOmoqJDczvlI2CtMtjQTVK0vV6499yqUF99IBH04Spq8d7aNjSV6DfE7zv3ops2bGJn5fIErjvDdYbvAT26lUwPBk5SN4Dvfga6ivKsjPRF8sruoCvAyPo4Fe0kDBaSRDUYOKff7gvQedN1p0boIZrolPjIn2hfHWhgl7yGfZBryAQdEAih6Y2nwzWjngbEVOZMYQfaPNIXVtRh4q_r-4Zpcfe8UyP_HGH0a_I-wX-J1SOZKZzBd_JA-UXp4LMoXwP-LLtkaZrvll8G4mIPSnQ56kHYkpVf1to0a6CBu2BYzVxwSdrRNamkhFkHEo9QdRksl42swFjZgRQrRQnjc8kjWH-qjSpH_fncrnXJiMYT8CmefE" https://$TSB_FQDN:8443/v2/organizations/tetrate/tenants | jq -r .
 ```
 
@@ -12,7 +12,7 @@ curl -k -X GET -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/tetra
 
 ## Step 1 creating cluster, i.e. `tctl apply -f "${FOLDER}/$CLUSTER.yaml"`
 
-```
+```sh
 export FOLDER='.'
 export ORG="tetrate"
 export CLUSTER="ea2p3d1"
@@ -37,7 +37,7 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/cluster
 
 ## Step 2 creating service account, i.e. `tctl install cluster-service-account --cluster $CLUSTER > $CLUSTER-service-account.jwk`
 
-```
+```sh
 export FOLDER='.'
 export ORG="tetrate"
 export CLUSTER="ea2p3d1"
@@ -89,7 +89,7 @@ cat sa-$CLUSTER-jwk.json | jq -r '.keys[0]' -c
 
 ## delete examples
 
-```
+```sh
 export ORG="tetrate"
 export CLUSTER="testcluster3"
 
