@@ -1,5 +1,5 @@
 export FOLDER="."
-export TSB_FQDN="ea1p4demo.cx.tetrate.info"
+export TSB_FQDN="ea2p3demo.cx.tetrate.info"
 
 function create_cert() {
   local readonly name=$1

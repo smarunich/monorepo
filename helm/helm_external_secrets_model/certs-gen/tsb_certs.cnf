@@ -20,4 +20,4 @@ keyUsage             = digitalSignature, keyEncipherment
 extendedKeyUsage     = serverAuth, clientAuth
 subjectAltName       = @alt_names
 [ alt_names ]
-DNS.1 = ea1p4demo.cx.tetrate.info
+DNS.1 = ea2p3demo.cx.tetrate.info
