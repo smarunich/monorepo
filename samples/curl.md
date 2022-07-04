@@ -16,7 +16,7 @@ curl -k -X GET -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/tetra
 export FOLDER='.'
 export ORG="tetrate"
 export CLUSTER="ea2p3d1"
-export TSB_FQDN="ea2p3demo.cx.tetrate.info"
+export TSB_FQDN="35.203.190.107"
 
 # https://docs.tetrate.io/service-bridge/1.5.0.dev/rest/#operation/ClustersCreateCluster
 cat > "${FOLDER}/cluster-$CLUSTER.json" <<EOF
@@ -41,7 +41,7 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/cluster
 export FOLDER='.'
 export ORG="tetrate"
 export CLUSTER="ea2p3d1"
-export TSB_FQDN="ea2p3demo.cx.tetrate.info"
+export TSB_FQDN="35.203.190.107"
 
 # can be a direct api call, tctl can be avoided
 # tctl install cluster-service-account --cluster $CLUSTER > $CLUSTER-service-account.jwk
@@ -50,12 +50,14 @@ export TSB_FQDN="ea2p3demo.cx.tetrate.info"
 cat > "${FOLDER}/sa-$CLUSTER.json" <<EOF
 {
   "name": "cluster-$CLUSTER",
-  "serviceAccount": {}
+  "serviceAccount": {},
+  "keyEncoding": "JWK"
 }
 EOF
 
 curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/serviceaccounts -X POST -d @sa-$CLUSTER.json > sa-$CLUSTER-keys.json
-#cat sa-$CLUSTER-keys.json
+cat sa-$CLUSTER-keys.json | jq -r '.keys[].privateKey'
+
 #curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/clusters/$CLUSTER/policy -X GET
 
 cat > "${FOLDER}/sa-$CLUSTER-policy.json" <<EOF
@@ -82,9 +84,7 @@ cat > "${FOLDER}/sa-$CLUSTER-policy.json" <<EOF
 EOF
 
 curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/clusters/$CLUSTER/policy -X PUT -d @sa-$CLUSTER-policy.json
-# required jwk for cluster-service-account secret as part of control plane onboarding
-curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/serviceaccounts/cluster-$CLUSTER/jwks > sa-$CLUSTER-jwk.json
-cat sa-$CLUSTER-jwk.json | jq -r '.keys[0]' -c
+
 ```
 
 ## delete examples
