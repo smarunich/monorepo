@@ -91,7 +91,7 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/cluster
 
 kudos to @shamusx
 
-```
+```sh
 export FOLDER='.'
 export ORG="tetrate"
 export CLUSTER="ea3p1d2"
