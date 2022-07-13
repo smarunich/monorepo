@@ -88,6 +88,7 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/cluster
 ```
 
 ## Step 3 granting cluster service account required GitOps permissions, i.e. `tctl x gitops grant $CLUSTER`
+
 kudos to @shamusx
 
 ```
