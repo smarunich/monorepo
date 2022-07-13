@@ -87,6 +87,25 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/cluster
 
 ```
 
+## Step 3 granting cluster service account required GitOps permissions, i.e. `tctl x gitops grant $CLUSTER`
+kudos to @shamusx
+
+```
+export FOLDER='.'
+export ORG="tetrate"
+export CLUSTER="ea3p1d2"
+export TSB_FQDN="rc5p1demo.cx.tetrate.info"
+
+
+curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/policy > $ORG-policy.json
+
+cat $ORG-policy.json | jq --arg cluster organizations/$ORG/serviceaccounts/cluster-$CLUSTER  '. | select(.allow[].role=="rbac/admin").allow[].subjects +=[{"serviceAccount":$cluster}]' > patched-$ORG-policy.json
+
+curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/policy -X PUT -d @patched-$ORG-policy.json
+
+#curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/policy
+```
+
 ## delete examples
 
 ```sh
