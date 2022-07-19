@@ -1,0 +1,30 @@
+{
+  "fqn": "organizations/tetrate",
+  "etag": "",
+  "description": "",
+  "allow": [
+    {
+      "role": "rbac/admin",
+      "subjects": [
+        {
+          "serviceAccount": "teamsync-job"
+        },
+        {
+          "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-r150demo-aks-1"
+        },
+        {
+          "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-r150demo-aks-2"
+        },
+        {
+          "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-r150demo-eks-1"
+        },
+        {
+          "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-r150demo-gke-1"
+        },
+        {
+          "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-aadarsh1"
+        }
+      ]
+    }
+  ]
+}

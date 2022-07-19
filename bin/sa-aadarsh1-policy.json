@@ -1,0 +1,20 @@
+{
+    "allow": [
+        {
+            "role": "rbac/admin",
+            "subjects": [
+                {
+                    "serviceAccount": "admin"
+                }
+            ]
+        },
+        {
+            "role": "rbac/writer",
+            "subjects": [
+                {
+                    "serviceAccount": "organizations/tetrate/serviceaccounts/cluster-aadarsh1"
+                }
+            ]
+        }
+    ]
+}
