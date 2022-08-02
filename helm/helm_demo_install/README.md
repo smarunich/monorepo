@@ -38,6 +38,8 @@ helm install mp tetrate-tsb-helm/managementplane -n tsb --create-namespace -f ma
 
 ## Deploying CP...
 
+Please refer for more details over here: https://docs.tetrate.io/service-bridge/1.5.x/en-us/setup/requirements-and-download, https://docs.tetrate.io/service-bridge/1.5.x/en-us/setup/helm/controlplane
+
 ### Connect to MP
 
 ```sh
