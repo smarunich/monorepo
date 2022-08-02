@@ -9,21 +9,22 @@ image:
   registry: $REGISTRY
   tag: 1.5.0
 secrets:
+  ldap:
+    binddn: cn=admin,dc=tetrate,dc=io
+    bindpassword: admin
+  postgres:
+    password: tsb-postgres-password
+    username: tsb
   tsb:
     adminPassword: Tetrate123
-    cert: | 
-      
-    key: |
-      
+    cert: |   
+    key: |  
   xcp:
     autoGenerateCerts: false
     central:
-      cert: |
-        
-      key: | 
-        
+      cert: |   
+      key: |  
     rootca: |
-      
 spec:
   hub: $REGISTRY
   organization: $ORG

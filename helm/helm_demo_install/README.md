@@ -23,6 +23,7 @@ The output will consist of:
 ```sh
 export FOLDER="."
 export REGISTRY="r150helm0tsbacrahbiwkvvrb9u6wii.azurecr.io"
+export ORG="tetrate"
 ./prep_managementplane_values.sh
 cat managementplane_values.yaml
 ```
