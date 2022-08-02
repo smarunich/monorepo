@@ -17,9 +17,9 @@ secrets:
     autoGenerateCerts: false
     central:
       cert: |
-        $(cat xcp-central.crt) 
+        $(cat xcp-central-cert.crt) 
       key: |
-        $(cat xcp-central.key) 
+        $(cat xcp-central-cert.key) 
     rootca: |
       $(cat ca.crt)
 spec:
