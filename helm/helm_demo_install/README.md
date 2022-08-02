@@ -9,7 +9,7 @@ Please refer for more details over here: https://docs.tetrate.io/service-bridge/
 ```sh
 export FOLDER="."
 export TSB_FQDN="r150helm.cx.tetrate.info"
-sh ./certs-gen/certs-gen.sh
+./certs-gen/certs-gen.sh
 ```
 
 The output will consist of:
@@ -23,7 +23,7 @@ The output will consist of:
 ```sh
 export FOLDER="."
 export REGISTRY="r150helm0tsbacrahbiwkvvrb9u6wii.azurecr.io"
-sh prep_managementplane_values.sh
+./prep_managementplane_values.sh
 cat managementplane_values.yaml
 ```
 
