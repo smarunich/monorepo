@@ -30,7 +30,6 @@ image:
   registry: $REGISTRY
   tag: 1.5.0
 secrets:
-secrets:
   clusterServiceAccount:
     JWK: '`cat $CLUSTER_NAME-service-account.jwk`'
     clusterFQN: organizations/$ORG/clusters/$CLUSTER_NAME
