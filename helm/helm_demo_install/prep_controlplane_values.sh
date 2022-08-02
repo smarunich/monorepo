@@ -32,7 +32,7 @@ image:
 secrets:
 secrets:
   clusterServiceAccount:
-    JWK: $(\'cat $CLUSTER_NAME-service-account.jwk\')
+    JWK: '`cat $CLUSTER_NAME-service-account.jwk`'
     clusterFQN: organizations/$ORG/clusters/$CLUSTER_NAME
   elasticsearch:
     cacert: |
