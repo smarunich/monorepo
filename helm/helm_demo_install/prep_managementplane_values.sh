@@ -9,19 +9,14 @@ image:
 secrets:
   tsb:
     adminPassword: Tetrate123
-    cert: |
-      $(cat tsb_certs.crt)
-    key: |
-      $(cat tsb_certs.key)
+    cert: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' tsb_certs.crt)
+    key: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' tsb_certs.key)
   xcp:
     autoGenerateCerts: false
     central:
-      cert: |
-        $(cat xcp-central-cert.crt) 
-      key: |
-        $(cat xcp-central-cert.key) 
-    rootca: |
-      $(cat ca.crt)
+      cert: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' xcp-central-cert.crt) 
+      key: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' xcp-central-cert.key) 
+    rootca: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' ca.crt)
 spec:
   hub: $REGISTRY
   organization: $ORG
