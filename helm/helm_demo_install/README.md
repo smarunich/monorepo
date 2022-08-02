@@ -73,6 +73,6 @@ cat controlplane_values.yaml
 ```sh
 helm repo add tetrate-tsb-helm 'https://charts.dl.tetrate.io/public/helm/charts/'
 helm repo update
-helm install cp tetrate-tsb-helm/controlplane -n istio-system --create-namespace -f controlplane_values
-helm install cp tetrate-tsb-helm/dataplane -n istio-gateway --create-namespace -f dataplane_values.yaml
+helm install cp tetrate-tsb-helm/controlplane -n istio-system --create-namespace -f controlplane_values.yaml
+helm install dp tetrate-tsb-helm/dataplane -n istio-gateway --create-namespace -f dataplane_values.yaml
 ```
