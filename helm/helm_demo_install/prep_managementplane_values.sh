@@ -17,7 +17,7 @@ secrets:
       cert: for line in $(cat xcp-central-cert.crt); do echo -e "   $line"; done;
       key: for line in $(cat xcp-central-cert.key); do echo -e "   $line"; done;
     rootca: |
-      for line in $(cat ca.crt); do echo -e "   $line"; done;
+      $(for line in $(cat ca.crt); do echo -e "   $line"; done;)
 spec:
   hub: $REGISTRY
   organization: $ORG
