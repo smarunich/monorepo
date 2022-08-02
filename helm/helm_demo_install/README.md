@@ -9,7 +9,7 @@ Please refer for more details over here: https://docs.tetrate.io/service-bridge/
 ```sh
 export FOLDER="."
 export TSB_FQDN="r150helm.cx.tetrate.info"
-./certs-gen.sh
+./certs-gen/certs-gen.sh
 ```
 
 The output will consist of:
