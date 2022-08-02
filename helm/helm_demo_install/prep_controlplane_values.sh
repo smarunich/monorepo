@@ -33,7 +33,7 @@ secrets:
 secrets:
   clusterServiceAccount:
     JWK: $(cat $CLUSTER_NAME-service-account.jwk)
-    clusterFQN: $(cat $CLUSTER_NAME-service-account.jwk) 
+    clusterFQN: organizations/$ORG/clusters/$CLUSTER_NAME
   elasticsearch:
     cacert: |
   tsb:
@@ -59,7 +59,7 @@ EOF
 
 yq -i '.secrets.elasticsearch.cacert = strenv(CA_CRT) |
        .secrets.tsb.cacert = strenv(CA_CRT) |
-       .secrets.xcp.rootca = strenv(CA_CRT)'  controlplane_values.yaml
+       .secrets.xcp.rootca = strenv(CA_CRT)' controlplane_values.yaml
 
 cat >"${FOLDER}/dataplane_values.yaml" <<EOF
 image:

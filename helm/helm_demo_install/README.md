@@ -62,6 +62,7 @@ tetrate    tetrate
 export FOLDER="."
 export TSB_FQDN="r150helm.cx.tetrate.info"
 export REGISTRY="r150helm1tsbacrqasvohujrqvnjp0u.azurecr.io"
+export ORG="tetrate"
 export CLUSTER_NAME="app-cluster1"
 ./prep_controlplane_values.sh
 cat controlplane_values.yaml
