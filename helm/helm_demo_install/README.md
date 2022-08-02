@@ -21,22 +21,25 @@ The output will consist of:
 ### Prep the `managementplane_values.yaml`
 
 ```sh
+export FOLDER="."
+export REGISTRY="r150helm0tsbacrahbiwkvvrb9u6wii.azurecr.io"
 ./prep_managementplane_values.sh
 cat managementplane_values.yaml
 ```
 
 ### Install MP using Helm
 
+```sh
 helm repo add tetrate-tsb-helm 'https://charts.dl.tetrate.io/public/helm/charts/'
 helm repo update
 helm install mp tetrate-tsb-helm/managementplane -n tsb --create-namespace -f managementplane_values.yaml
+```
 
 ## Deploying CP...
 
-```
+```sh
 export TSB_FQDN="r150helm.cx.tetrate.info"
 tctl config clusters set helm --bridge-address $TSB_FQDN:8443
-
 tctl config users set helm --username admin --password "Tetrate123" --org "tetrate"
 tctl config profiles set helm --cluster helm --username helm
 tctl config profiles set-current helm

@@ -1,7 +1,3 @@
-export FOLDER="."
-export REGISTRY="r150helm0tsbacrahbiwkvvrb9u6wii.azurecr.io"
-export ORG="tetrate"
-
 cat >"${FOLDER}/managementplane_values.yaml" <<EOF
 image:
   registry: $REGISTRY
@@ -10,7 +6,7 @@ secrets:
   tsb:
     adminPassword: Tetrate123
     cert: | 
-      $(for line in $(cat tsb_certs.crt); do echo "   $line"; done;)
+      $(for line in $(cat tsb_certs.crt | head -1 | tail -1); do echo "   $line"; done;)
     key: 
       $(for line in $(cat tsb_certs.key); do echo "   $line"; done;)
   xcp:
