@@ -9,15 +9,15 @@ image:
 secrets:
   tsb:
     adminPassword: Tetrate123
-    cert: for line in $(tsb_certs.crt); do echo -e "   $line"; done;
-    key: for line in $(tsb_certs.key); do echo -e "   $line"; done;
+    cert: for line in $(cat tsb_certs.crt); do echo -e "   $line"; done;
+    key: for line in $(cat tsb_certs.key); do echo -e "   $line"; done;
   xcp:
     autoGenerateCerts: false
     central:
-      cert: for line in $(xcp-central-cert.crt); do echo -e "   $line"; done;
-      key: for line in $(xcp-central-cert.key); do echo -e "   $line"; done;
+      cert: for line in $(cat xcp-central-cert.crt); do echo -e "   $line"; done;
+      key: for line in $(cat xcp-central-cert.key); do echo -e "   $line"; done;
     rootca: |
-      for line in $(ca.crt); do echo -e "   $line"; done;
+      for line in $(cat ca.crt); do echo -e "   $line"; done;
 spec:
   hub: $REGISTRY
   organization: $ORG
