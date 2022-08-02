@@ -1,5 +1,5 @@
 export FOLDER="."
-export REGISTRY="ea1p2demotsbacrqsnstv6qddaupjrc.azurecr.io"
+export REGISTRY="r150helm0tsbacrahbiwkvvrb9u6wii.azurecr.io"
 export ORG="tetrate"
 
 cat >"${FOLDER}/managementplane_values.yaml" <<EOF
@@ -9,14 +9,15 @@ image:
 secrets:
   tsb:
     adminPassword: Tetrate123
-    cert: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' tsb_certs.crt)
-    key: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' tsb_certs.key)
+    cert: for line in $(tsb_certs.crt); do echo -e "   $line"; done;
+    key: for line in $(tsb_certs.key); do echo -e "   $line"; done;
   xcp:
     autoGenerateCerts: false
     central:
-      cert: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' xcp-central-cert.crt) 
-      key: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' xcp-central-cert.key) 
-    rootca: $(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' ca.crt)
+      cert: for line in $(xcp-central-cert.crt); do echo -e "   $line"; done;
+      key: for line in $(xcp-central-cert.key); do echo -e "   $line"; done;
+    rootca: |
+      for line in $(ca.crt); do echo -e "   $line"; done;
 spec:
   hub: $REGISTRY
   organization: $ORG
