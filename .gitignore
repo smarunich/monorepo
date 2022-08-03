@@ -1,0 +1,8 @@
+*.key
+*.pem
+*.csr
+*.cnf
+*.jwk
+*.srl
+*.pub
+*.crt
