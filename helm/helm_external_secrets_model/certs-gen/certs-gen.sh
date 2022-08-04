@@ -143,4 +143,6 @@ create_cert xcp-central-cert \
   "${FOLDER}/xcp-central-cert.cnf" \
   "${FOLDER}/ca.crt" \
   "${FOLDER}/ca.key"  
-  
+
+ssh-keygen -f jwt-token.key -m pem  -q -N ""
+#kubectl -n tsb create secret generic iam-signing-key --from-file=private.key=jwt-token.key
