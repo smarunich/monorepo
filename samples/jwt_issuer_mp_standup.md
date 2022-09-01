@@ -29,6 +29,8 @@ spec:
       signingKeysSecret: iam-signing-key
 ```
 
+### CP Token Cleanup
+Used for existing MP with existing CP
 ```bash
 k delete secret zipkin-token xcp-edge-central-auth-token otel-token ngac-token oap-token
 ```
