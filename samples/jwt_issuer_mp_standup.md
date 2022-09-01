@@ -11,7 +11,7 @@ Recomendedation: in production deployment to supply a dedicated signing key for 
 ssh-keygen -f jwt-token.key -m pem
 
 # Create Kubernetes Secret using generated key
-kubectl -n default create secret generic iam-signing-key --from-file=private.key=jwt-token.key
+kubectl -n tsb create secret generic iam-signing-key --from-file=private.key=jwt-token.key
 ```
 ### Supply following to Management Plane Config
 Private Key secret name and `key` name of `private.key` used by iam secret volumeMount
@@ -27,4 +27,8 @@ spec:
         - name: https://jwt.tetrate.io
           signingKey: private.key
       signingKeysSecret: iam-signing-key
+```
+
+```bash
+k delete secret zipkin-token xcp-edge-central-auth-token otel-token ngac-token oap-token
 ```
