@@ -49,5 +49,6 @@ spec:
     - name: gke-r152d3-us-west1-0
       weight: 100
     tls:
+#to be switched to MUTUAL, to setup the MTLS with APIM
       mode: SIMPLE
       secretName: apim-facing-secret  

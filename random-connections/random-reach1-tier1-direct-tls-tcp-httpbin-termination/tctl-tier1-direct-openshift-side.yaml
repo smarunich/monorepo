@@ -128,6 +128,7 @@ spec:
       - port:
           number: 443
         tls:
+#to be switched to MUTUAL, to setup the MTLS with Spring Gateway
           mode: SIMPLE
           sni: httpbin-spring-gateway.gcp.cx.tetrate.info
 ---
