@@ -56,14 +56,14 @@ spec:
   selector:
     app: tier1-gw-lob1
   servers:
-  - port:
-      number: 443
-      name: tls-443
-      protocol: TLS
-    tls:
-      mode: PASSTHROUGH
-    hosts:
+  - hosts:
     - httpbin-spring-gateway.gcp.cx.tetrate.info
+    port:
+      name: mtls-multicluster
+      number: 15443
+      protocol: HTTPS
+    tls:
+      mode: ISTIO_MUTUAL
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -82,9 +82,7 @@ spec:
   - tier1-gw-lob1/tier1-gw-lob1-httpbin-spring-gateway
   tls:
     - match:
-        - sniHosts:
-            - httpbin-spring-gateway.gcp.cx.tetrate.info
-          port: 443
+        - port: 15443
       route:
         - destination:
             host: "httpbin-spring-gateway.gcp.cx.tetrate.info"
