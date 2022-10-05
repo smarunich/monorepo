@@ -1,0 +1,118 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  displayName: lob1-openshift-platform-ws
+  name: lob1-openshift-platform-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  displayName: lob1-openshift-platform-ws
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1
+  privileged: false
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: lob1-openshift-platform-gg
+  name: lob1-openshift-platform-gg
+  organization: tetrate
+  tenant: dev
+  workspace: lob1-openshift-platform-ws
+spec:
+  configMode: DIRECT
+  displayName: lob1-openshift-platform-gg
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1
+---
+apiVersion: istiointernal.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: lob1-openshift-platform-ig
+  name: lob1-openshift-platform-ig
+  organization: tetrate
+  tenant: dev
+  workspace: lob1-openshift-platform-ws
+spec:
+  displayName: lob1-openshift-platform-ig
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+    tsb.tetrate.io/gatewayGroup: lob1-openshift-platform-gg
+  name: tier1-gw-lob1-httpbin-spring-gateway
+  namespace: tier1-gw-lob1
+spec:
+  selector:
+    app: tier1-gw-lob1
+  servers:
+  - port:
+      number: 443
+      name: tls-443
+      protocol: TLS
+    tls:
+      mode: PASSTHROUGH
+    hosts:
+    - httpbin-spring-gateway.gcp.cx.tetrate.info
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+    tsb.tetrate.io/gatewayGroup: lob1-openshift-platform-gg
+  name: tier1-vs-lob1-httpbin-spring-gateway
+  namespace: tier1-gw-lob1
+spec:
+  hosts: 
+  - httpbin-spring-gateway.gcp.cx.tetrate.info
+  gateways:
+  - tier1-gw-lob1/tier1-gw-lob1-httpbin-spring-gateway
+  tls:
+    - match:
+        - sniHosts:
+            - httpbin-spring-gateway.gcp.cx.tetrate.info
+          port: 443
+      route:
+        - destination:
+            host: "httpbin-spring-gateway.gcp.cx.tetrate.info"
+            port:
+              number: 443
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+    tsb.tetrate.io/istioInternalGroup: lob1-openshift-platform-ig
+  name: httpbin-spring-gateway-serviceentry
+  namespace: tier1-gw-lob1
+spec:
+  endpoints:
+  - address: 34.127.110.137
+    ports:
+      tls-443: 443
+  exportTo:
+  - '*'
+  hosts:
+  - httpbin-spring-gateway.gcp.cx.tetrate.info
+  location: MESH_EXTERNAL
+  ports:
+  - name: tls-443
+    number: 443
+    protocol: TLS
+  resolution: STATIC

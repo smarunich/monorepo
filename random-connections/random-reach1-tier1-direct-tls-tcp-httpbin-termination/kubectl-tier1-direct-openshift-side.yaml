@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tier1-gw-lob1
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: Tier1Gateway
+metadata:
+  name: tier1-gw-lob1
+  namespace: tier1-gw-lob1
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spring-gateway
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: spring-gateway
+  namespace: spring-gateway
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer

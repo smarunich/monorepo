@@ -1,0 +1,1 @@
+ curl -vI -X GET -k https://httpbin-spring-gateway.gcp.cx.tetrate.info:443/ --resolve httpbin-spring-gateway.gcp.cx.tetrate.info:443:34.168.205.234 -H"Host: httpbin-spring-gateway.gcp.cx.tetrate.info"

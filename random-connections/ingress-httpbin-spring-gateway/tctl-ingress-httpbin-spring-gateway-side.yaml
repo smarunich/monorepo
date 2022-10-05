@@ -1,0 +1,54 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  displayName: spring-gateway-ws
+  name: spring-gateway-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  displayName: spring-gateway-ws
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-1/spring-gateway
+  privileged: false
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: spring-gateway-gg
+  name: spring-gateway-gg
+  organization: tetrate
+  tenant: dev
+  workspace: spring-gateway-ws
+spec:
+  configMode: BRIDGED
+  displayName: spring-gateway-gg
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-1/spring-gateway
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: ingress-httpbin-spring-gateway
+  group: spring-gateway-gg
+  workspace: spring-gateway-ws
+spec:
+  workloadSelector:
+    namespace: spring-gateway
+    labels:
+      app: spring-gateway
+  http:
+    - name: httpbin-spring-gateway
+      port: 443
+      hostname: "httpbin-spring-gateway.gcp.cx.tetrate.info"
+      tls:
+        mode: SIMPLE
+        secretName: httpbin-spring-gateway-secret
+      routing:
+        rules:
+          - route:
+              host: "spring-gateway/httpbin.spring-gateway.svc.cluster.local"
