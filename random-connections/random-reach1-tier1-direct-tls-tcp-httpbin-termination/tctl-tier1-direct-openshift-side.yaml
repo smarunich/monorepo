@@ -28,6 +28,21 @@ spec:
     names:
     - gke-r152d3-us-west1-0/tier1-gw-lob1
 ---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: lob1-openshift-platform-tg
+  name: lob1-openshift-platform-tg
+  organization: tetrate
+  tenant: dev
+  workspace: lob1-openshift-platform-ws
+spec:
+  configMode: DIRECT
+  displayName: lob1-openshift-platform-tg
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1
+---
 apiVersion: istiointernal.tsb.tetrate.io/v2
 kind: Group
 metadata:
@@ -80,7 +95,7 @@ spec:
   - httpbin-spring-gateway.gcp.cx.tetrate.info
   gateways:
   - tier1-gw-lob1/tier1-gw-lob1-httpbin-spring-gateway
-  tls:
+  http:
     - match:
         - port: 15443
       route:
@@ -88,6 +103,33 @@ spec:
             host: "httpbin-spring-gateway.gcp.cx.tetrate.info"
             port:
               number: 443
+            subset: httpbin-spring-gateway-se-subset
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+    tsb.tetrate.io/trafficGroup: lob1-openshift-platform-tg
+  name: tier1-dr-lob1-httpbin-spring-gateway
+  namespace: tier1-gw-lob1
+spec:
+  exportTo:
+  - .
+  host: httpbin-spring-gateway.gcp.cx.tetrate.info
+  subsets:
+  - labels:
+      gateway: "httpbin-spring-gateway-serviceentry"
+    name: httpbin-spring-gateway-se-subset
+    trafficPolicy:
+      portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: SIMPLE
+          sni: httpbin-spring-gateway.gcp.cx.tetrate.info
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: ServiceEntry
@@ -102,6 +144,8 @@ metadata:
 spec:
   endpoints:
   - address: 34.127.110.137
+    labels:
+      gateway: "httpbin-spring-gateway-serviceentry"
     ports:
       tls-443: 443
   exportTo:
@@ -113,4 +157,4 @@ spec:
   - name: tls-443
     number: 443
     protocol: TLS
-  resolution: STATIC
+  resolution: DNS
