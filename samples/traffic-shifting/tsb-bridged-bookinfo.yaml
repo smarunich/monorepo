@@ -1,0 +1,100 @@
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: bookinfo-ws
+spec:
+  namespaceSelector:
+    names:
+      - "gke-us-east1-01/bookinfo"
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-gw
+spec:
+  description: bookinfo-gw
+  displayName: bookinfo-gw
+  namespaceSelector:
+    names:
+      - "gke-us-east1-01/bookinfo"
+  configMode: BRIDGED
+---
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-security
+spec:
+  description: bookinfo-security
+  displayName: bookinfo-security
+  namespaceSelector:
+    names:
+      - "gke-us-east1-01/bookinfo"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-traffic
+spec:
+  description: bookinfo-traffic
+  displayName: bookinfo-traffic
+  namespaceSelector:
+    names:
+      - "gke-us-east1-01/bookinfo"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  name: bookinfo-bridged
+  group: bookinfo-gw
+  workspace: bookinfo-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  workloadSelector:
+    namespace: bookinfo
+    labels:
+      app: bookinfo-gw
+  http:
+  - name: bookinfo-bridged
+    port: 80
+    hostname: productpage.tetrate.int
+    tls:
+      mode: DISABLED
+    routing:
+      rules:
+      - route:
+          host: bookinfo/productpage.bookinfo.svc.cluster.local
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: ServiceRoute
+metadata:
+  name: bookinfo-serv
+  group: bookinfo-traffic
+  workspace: bookinfo-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  service: bookinfo/reviews.bookinfo.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+    weight: 100
+  - name: v2
+    labels:
+      version: v2
+    weight: 0
