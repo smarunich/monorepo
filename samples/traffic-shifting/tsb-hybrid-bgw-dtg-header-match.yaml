@@ -1,0 +1,130 @@
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: bookinfo-ws
+spec:
+  namespaceSelector:
+    names:
+      - "gke-sw15x02-us-east1-0/bookinfo"
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-gw
+spec:
+  description: bookinfo-gw
+  displayName: bookinfo-gw
+  namespaceSelector:
+    names:
+      - "gke-sw15x02-us-east1-0/bookinfo"
+  configMode: BRIDGED
+---
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-security
+spec:
+  description: bookinfo-security
+  displayName: bookinfo-security
+  namespaceSelector:
+    names:
+      - "gke-sw15x02-us-east1-0/bookinfo"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: dev
+  workspace: bookinfo-ws
+  name: bookinfo-traffic
+spec:
+  description: bookinfo-traffic
+  displayName: bookinfo-traffic
+  namespaceSelector:
+    names:
+      - "gke-sw15x02-us-east1-0/bookinfo"
+  configMode: DIRECT
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  name: bookinfo-bridged
+  group: bookinfo-gw
+  workspace: bookinfo-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  workloadSelector:
+    namespace: bookinfo
+    labels:
+      app: bookinfo-gw
+  http:
+  - name: bookinfo-bridged
+    port: 80
+    hostname: sw-bookinfo.gcp.cx.tetrate.info
+    tls:
+      mode: DISABLED
+    routing:
+      rules:
+      - route:
+          host: bookinfo/productpage.bookinfo.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: bookinfo-ws
+    tsb.tetrate.io/trafficGroup: bookinfo-traffic
+  name: bookinfo-reviews-vs
+  namespace: bookinfo
+spec:
+  hosts: 
+  - reviews.bookinfo.svc.cluster.local
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    route:
+    - destination:
+        host: reviews.bookinfo.svc.cluster.local
+        subset: v2
+  - route:
+    - destination:
+        host: reviews.bookinfo.svc.cluster.local
+        subset: v3
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: bookinfo-ws
+    tsb.tetrate.io/trafficGroup: bookinfo-traffic
+  name: reviews-dr
+  namespace: bookinfo
+spec:
+  host: reviews.bookinfo.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+  - name: v3
+    labels:
+      version: v3
