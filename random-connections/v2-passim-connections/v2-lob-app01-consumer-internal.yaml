@@ -55,7 +55,6 @@ items:
       internalServers:
       - hostname: internal-api-httpbin.gcp.cx.tetrate.info
         name: lob-app01-consumer
-        port: 443
         clusters:
         - name: gke-r160rc5p1-us-west1-1
           weight: 100
