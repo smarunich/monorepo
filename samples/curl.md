@@ -107,6 +107,13 @@ curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/policy 
 #curl -k -u admin:Tetrate123 https://$TSB_FQDN:8443/v2/organizations/$ORG/policy
 ```
 
+## Acquire a new key for the existing service account
+
+```sh
+curl -k -u admin:Tetrate123 https://${BASE_URL}/v2/organizations/tetrate/serviceaccounts/cluster-$CLSUTER/keys -X POST -d '{
+"keyEncoding": "JWK"}' | jq -rc '.keys[-1].privateKey'
+```
+
 ## delete examples
 
 ```sh
