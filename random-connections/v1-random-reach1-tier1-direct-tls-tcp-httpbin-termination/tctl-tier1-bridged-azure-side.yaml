@@ -1,0 +1,133 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  displayName: lob1-azure-platform-ws
+  name: lob1-azure-platform-ws
+  organization: tetrate
+  tenant: dev
+spec:
+  displayName: lob1-azure-platform-ws
+  namespaceSelector:
+    names:
+    - aks-r152d3-eastus-0/tier1-gw-lob1
+  privileged: false
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  displayName: lob1-azure-platform-gg
+  name: lob1-azure-platform-gg
+  organization: tetrate
+  tenant: dev
+  workspace: lob1-azure-platform-ws
+spec:
+  configMode: BRIDGED
+  displayName: lob1-azure-platform-gg
+  namespaceSelector:
+    names:
+    - aks-r152d3-eastus-0/tier1-gw-lob1
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: tier1httpbinspgw
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  workloadSelector:
+    namespace: tier1-gw-lob1
+    labels:
+      app: tier1-gw-lob1
+#PASSTHROUGH?
+  externalServers:
+  - hostname: httpbin-spring-gateway.gcp.cx.tetrate.info
+    name: tier1httpbinspgw
+    port: 443
+    clusters:
+    - name: SPG_EXTERNAL
+      weight: 100
+    tls:
+#to be switched to MUTUAL, to setup the MTLS with APIM
+      mode: MUTUAL
+      secretName: apim-facing-secret  
+
+
+Cluster Definition:
+1. IP or FQDN (STATIC, DNS)
+2. Port (HTTP, HTTPS, TLS)
+3. Certificates to be provided by (*Servers.tls section under Tier1)
+3. Host Header or SNI overwrite
+
+
+
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: ExternalCluster
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: SPG_Cluster1
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  endpoints:
+  - serviceAddress: IP|FQDN
+    serviceHostHeader: FQDN *if HTTPS/TLS as proto then SNI
+    overwriteHostHeader: true|false 
+    resolution: STATIC|DNS
+    port: 
+    protocol: HTTP|HTTPS|TCP|TLS
+
+
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: ExternalClusterService
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: SPG_Cluster1_Service1
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  endpoints:
+  - serviceAddress: httpbin-spring-gateway1.gcp.cx.tetrate.info
+    resolution: DNS
+    serviceHostHeader: service1.gcp.cx.tetrate.info
+    overwriteHostHeader: true
+    port: 443
+    protocol: HTTPS
+  - serviceAddress: httpbin-spring-gateway2.gcp.cx.tetrate.info
+    resolution: DNS
+    serviceHostHeader: service1.gcp.cx.tetrate.info
+    overwriteHostHeader: true
+    port: 443
+    protocol: HTTPS
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: tier1httpbinspgw
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  workloadSelector:
+    namespace: tier1-gw-lob1
+    labels:
+      app: tier1-gw-lob1
+#PASSTHROUGH?
+  externalServers:
+  - hostname: httpbin-spring-gateway.gcp.cx.tetrate.info
+    name: tier1httpbinspgw
+    port: 443
+    clusters:
+    - name: SPG_EXTERNAL
+      weight: 100
+    tls:
+#to be switched to MUTUAL, to setup the MTLS with APIM
+      mode: MUTUAL
+      secretName: apim-facing-secret  

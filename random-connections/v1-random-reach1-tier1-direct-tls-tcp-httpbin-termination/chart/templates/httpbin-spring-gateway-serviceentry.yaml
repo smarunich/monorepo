@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: {{ include "chart.fullname" . }}-httpbin-spring-gateway-serviceentry
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+  annotations:
+    tsb.tetrate.io/istioInternalGroup: lob1-openshift-platform-ig
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+spec:
+  endpoints:
+  - address: 34.127.110.137
+    labels:
+      gateway: httpbin-spring-gateway-serviceentry
+    ports:
+      tls-443: 443
+  exportTo:
+  - '*'
+  hosts:
+  - httpbin-spring-gateway.gcp.cx.tetrate.info
+  location: MESH_EXTERNAL
+  ports:
+  - name: tls-443
+    number: 443
+    protocol: TLS
+  resolution: DNS

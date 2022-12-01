@@ -1,0 +1,47 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: ExternalCluster
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: SPG_Cluster1_Service1
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  endpoints:
+  - serviceAddress: httpbin-spring-gateway1.gcp.cx.tetrate.info
+    resolution: DNS
+    serviceHostHeader: service1.gcp.cx.tetrate.info
+    overwriteHostHeader: true
+    port: 443
+    protocol: HTTPS
+  - serviceAddress: httpbin-spring-gateway2.gcp.cx.tetrate.info
+    resolution: DNS
+    serviceHostHeader: service1.gcp.cx.tetrate.info
+    overwriteHostHeader: true
+    port: 443
+    protocol: HTTPS
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: dev
+  name: tier1httpbinspgw
+  group: lob1-azure-platform-gg
+  workspace: lob1-azure-platform-ws
+spec:
+  workloadSelector:
+    namespace: tier1-gw-lob1
+    labels:
+      app: tier1-gw-lob1
+  externalServers:
+  - hostname: service1.gcp.cx.tetrate.info
+    name: tier1httpbinspgw
+    port: 443
+    clusters:
+    - name: SPG_Cluster1_Service1
+      weight: 100
+    tls:
+      mode: SIMPLE
+      secretName: apim-facing-secret  

@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ include "chart.fullname" . }}-tier1-dr-lob1-httpbin-spring-gateway
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/trafficGroup: lob1-openshift-platform-tg
+    tsb.tetrate.io/workspace: lob1-openshift-platform-ws
+spec:
+  exportTo:
+  - .
+  host: httpbin-spring-gateway.gcp.cx.tetrate.info
+  subsets:
+  - labels:
+      gateway: httpbin-spring-gateway-serviceentry
+    name: httpbin-spring-gateway-se-subset
+    trafficPolicy:
+      portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: SIMPLE
+          sni: httpbin-spring-gateway.gcp.cx.tetrate.info

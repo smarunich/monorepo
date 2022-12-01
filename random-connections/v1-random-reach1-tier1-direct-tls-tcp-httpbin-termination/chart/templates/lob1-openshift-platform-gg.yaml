@@ -1,0 +1,12 @@
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  name: {{ include "chart.fullname" . }}-lob1-openshift-platform-gg
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  configMode: DIRECT
+  displayName: lob1-openshift-platform-gg
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1

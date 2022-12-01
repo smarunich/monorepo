@@ -1,0 +1,11 @@
+apiVersion: istiointernal.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  name: {{ include "chart.fullname" . }}-lob1-openshift-platform-ig
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  displayName: lob1-openshift-platform-ig
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1

@@ -1,0 +1,12 @@
+apiVersion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  name: {{ include "chart.fullname" . }}-lob1-openshift-platform-ws
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  displayName: lob1-openshift-platform-ws
+  namespaceSelector:
+    names:
+    - gke-r152d3-us-west1-0/tier1-gw-lob1
+  privileged: false
