@@ -52,7 +52,7 @@ items:
       http:
         - name: httpbin
           port: 80
-          hostname: "internal-api-httpbin.tetrate.io"
+          hostname: "internal-api-httpbin.gcp.cx.tetrate.info"
           routing:
             rules:
               - route:

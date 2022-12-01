@@ -5,35 +5,35 @@ items:
   - apiVersion: tsb.tetrate.io/v2
     kind: Workspace
     metadata:
-      name: lob-app01-consumer-ws
+      name: lob-app02-consumer-ws
       annotations:
         tsb.tetrate.io/organization: tetrate
         tsb.tetrate.io/tenant: dev
     spec:
-      displayName: lob-app01-consumer-ws
+      displayName: lob-app02-consumer-ws
       namespaceSelector:
         names:
-        - gke-r160rc5p1-us-east1-0/lob-app01
+        - gke-r160rc5p1-us-east1-0/lob-app02
       privileged: false
   - apiVersion: gateway.tsb.tetrate.io/v2
     kind: Group
     metadata:
-      name: lob-app01-consumer-gg
+      name: lob-app02-consumer-gg
       annotations:
         tsb.tetrate.io/organization: tetrate
         tsb.tetrate.io/tenant: dev
-        tsb.tetrate.io/workspace: lob-app01-consumer-ws
+        tsb.tetrate.io/workspace: lob-app02-consumer-ws
     spec:
       configMode: BRIDGED
-      displayName: lob-app01-consumer-gg
+      displayName: lob-app02-consumer-gg
       namespaceSelector:
         names:
-        - gke-r160rc5p1-us-east1-0/lob-app01
+        - gke-r160rc5p1-us-east1-0/lob-app02
   - apiVersion: install.tetrate.io/v1alpha1
     kind: Tier1Gateway
     metadata:
-      name: lob-app01-consumer-t1
-      namespace: lob-app01
+      name: lob-app02-consumer-t1
+      namespace: lob-app02
     spec:
       kubeSpec:
         service:
@@ -41,20 +41,20 @@ items:
   - apiVersion: gateway.tsb.tetrate.io/v2
     kind: Tier1Gateway
     metadata:
-      name: lob-app01-int-tier1
+      name: lob-app02-int-t1
       annotations:
         tsb.tetrate.io/organization: tetrate
         tsb.tetrate.io/tenant: dev
-        tsb.tetrate.io/gatewayGroup: lob-app01-consumer-gg
-        tsb.tetrate.io/workspace: lob-app01-consumer-ws
+        tsb.tetrate.io/gatewayGroup: lob-app02-consumer-gg
+        tsb.tetrate.io/workspace: lob-app02-consumer-ws
     spec:
       workloadSelector:
-        namespace: lob-app01
+        namespace: lob-app02
         labels:
-          app: lob-app01-consumer-t1
+          app: lob-app02-consumer-t1
       internalServers:
       - hostname: internal-api-httpbin.gcp.cx.tetrate.info
-        name: lob-app01-consumer
+        name: lob-app02-consumer
         clusters:
         - name: gke-r160rc5p1-us-west1-1
           weight: 100

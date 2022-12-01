@@ -41,7 +41,7 @@ items:
   - apiVersion: gateway.tsb.tetrate.io/v2
     kind: Tier1Gateway
     metadata:
-      name: lob-app01-tier1
+      name: lob-app01-ext-t1
       annotations:
         tsb.tetrate.io/organization: tetrate
         tsb.tetrate.io/tenant: dev
