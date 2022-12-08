@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Tenant
+    metadata:
+      name: consumers
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+    spec:
+      description: consumers
+      displayName: consumers
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: trusted-consumer-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: consumers
+    spec:
+      namespaceSelector:
+        names:
+          - "*/trusted-consumer"
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: untrusted-consumer-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: consumers
+    spec:
+      namespaceSelector:
+        names:
+          - "*/untrusted-consumer"
