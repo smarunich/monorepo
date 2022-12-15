@@ -7,7 +7,7 @@ export CR="docker.io/smarunich"
 make build.example name=$WASM_EXAMPLE
 docker build . -t $CR/$WASM_EXAMPLE:$WASM_EXAMPLE_VERSION -f examples/wasm-image.Dockerfile --build-arg WASM_BINARY_PATH=examples/$WASM_EXAMPLE/main.wasm
 
-docker pull $CR/$WASM_EXAMPLE:$WASM_EXAMPLE_VERSION
+docker push $CR/$WASM_EXAMPLE:$WASM_EXAMPLE_VERSION
 
 cat >"${FOLDER}/wasm_extension.yaml" <<EOF
 ---
