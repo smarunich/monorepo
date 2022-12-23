@@ -1,0 +1,192 @@
+apiVersion: install.tetrate.io/v1alpha1
+kind: ControlPlane
+metadata:
+  annotations:
+    meta.helm.sh/release-name: controlplane
+    meta.helm.sh/release-namespace: istio-system
+  creationTimestamp: "2022-12-20T17:42:32Z"
+  finalizers:
+  - controlplanes.install.tetrate.io/cp-cleanup
+  generation: 5
+  labels:
+    app.kubernetes.io/instance: controlplane
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 1.6.0-internal-rc8
+    helm.sh/chart: controlplane-1.6.0-internal-rc8
+  name: controlplane
+  namespace: istio-system
+  resourceVersion: "2336780"
+  uid: 99aaed61-ced0-4a5a-974c-b24ac621f91f
+spec:
+  components:
+    collector:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1000Mi
+            requests:
+              cpu: 400m
+              memory: 500Mi
+    gitops:
+      batchWindow: 1s
+      enabled: true
+      reconcileInterval: 600s
+    hpaAdapter:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+        service:
+          type: ClusterIP
+    internalCertProvider:
+      certManager:
+        managed: EXTERNAL
+    istio:
+      kubeSpec:
+        deployment:
+          hpaSpec:
+            maxReplicas: 10
+            metrics:
+            - resource:
+                name: cpu
+                targetAverageUtilization: 75
+              type: Resource
+            minReplicas: 1
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 4096Mi
+            requests:
+              cpu: 500m
+              memory: 2048Mi
+    ngac:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+    oap:
+      kubeSpec:
+        deployment:
+          containerSecurityContext:
+            runAsUser: 1000
+          replicaCount: 1
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 2Gi
+      streamingLogEnabled: true
+    onboarding:
+      operator:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
+          service:
+            type: ClusterIP
+      repository:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
+          service:
+            type: ClusterIP
+    satellite:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 2Gi
+    xcp:
+      centralAuthMode: JWT
+      configProtection: {}
+      isolationBoundaries:
+      - name: global
+        revisions:
+        - istio:
+            tsbVersion: 1.6.08
+          name: stable
+      - name: dev
+        revisions:
+        - istio:
+            tsbVersion: 1.6.0
+          name: dev-stable
+      - name: stg
+        revisions:
+        - istio:
+            tsbVersion: 1.6.0
+          name: stg-stable
+      kubeSpec:
+        deployment:
+          env:
+          - name: ENABLE_GATEWAY_DELETE_HOLD
+            value: "true"
+          - name: GATEWAY_DELETE_HOLD_SECONDS
+            value: "20"
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
+          patches:
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_ENHANCED_EAST_WEST_ROUTING
+              value: "true"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: DISABLE_TIER1_TIER2_SEPARATION
+              value: "true"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_DNS_RESOLUTION_AT_EDGE
+              value: "true"
+        service:
+          type: ClusterIP
+  hub: gcr.io/r160rc8p2-ashj-1
+  managementPlane:
+    clusterName: gke-r160rc8p2-us-west1-1
+    host: r160rc8p2.gcp.cx.tetrate.info
+    port: 443
+    selfSigned: true
+  meshExpansion: {}
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  telemetryStore:
+    elastic:
+      host: 35.233.253.230
+      port: 9200
+      selfSigned: true
+      version: 7
