@@ -1,0 +1,109 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: networking.istio.io/v1beta1
+    kind: Gateway
+    metadata:
+      name: lob-app01-gateway-rogue
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-provider-gg
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      selector:
+        app: lob-app01-provider-t1
+      servers:
+      - hosts:
+        - rogue-external-api-httpbin.gcp.cx.tetrate.info
+        port:
+          name: mtls-multicluster
+          number: 16443
+          protocol: HTTP
+  - apiVersion: networking.istio.io/v1beta1
+    kind: DestinationRule
+    metadata:
+      name: lob-app01-dr-rogue
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+        tsb.tetrate.io/trafficGroup: lob-app01-provider-tg
+      labels:
+        istio.io/rev: tsb
+    spec:
+      exportTo:
+      - .
+      host: rogue-httpbin.org
+      subsets:
+      - labels:
+          gateway: lob-app01-serviceentry-rogue
+        name: lob-app01-subset-rogue
+        trafficPolicy:
+          portLevelSettings:
+          - port:
+              number: 443
+            tls:
+              mode: SIMPLE
+              sni: rogue-httpbin.org
+  - apiVersion: networking.istio.io/v1beta1
+    kind: ServiceEntry
+    metadata:
+      name: lob-app01-serviceentry-rogue
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/istioInternalGroup: lob-app01-provider-ig
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      endpoints:
+      - address: 3.229.200.4
+        labels:
+          gateway: lob-app01-serviceentry-rogue
+        ports:
+          lob-app01-port-rogue: 443
+      exportTo:
+      - '*'
+      hosts:
+      - rogue-httpbin.org
+      location: MESH_EXTERNAL
+      ports:
+      - name: lob-app01-port-rogue
+        number: 443
+        protocol: TLS
+      resolution: DNS
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: lob-app01-virtualservice-rogue
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-provider-gg
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      gateways:
+      - lob-app01/lob-app01-gateway-rogue
+      hosts:
+      - rogue-external-api-httpbin.gcp.cx.tetrate.info
+      http:
+      - match:
+        - port: 15443
+        headers:
+          request:
+            set:
+              host: "rogue-httpbin.org"
+        route:
+        - destination:
+            host: rogue-httpbin.org
+            port:
+              number: 443
+            subset: lob-app01-subset-rogue
+

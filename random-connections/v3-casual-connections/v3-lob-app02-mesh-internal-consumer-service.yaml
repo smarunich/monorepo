@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: consumer-service-httpbin-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      namespaceSelector:
+        names:
+          - "*/consumer-service-httpbin"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: consumer-service-httpbin-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: consumer-service-httpbin-ws
+    spec:
+      namespaceSelector:
+        names:
+          - "*/consumer-service-httpbin"
+      configMode: BRIDGED
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: IngressGateway
+    metadata:
+      name: consumer-service-httpbin-gw
+      namespace: consumer-service-httpbin
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: consumer-service-httpbin-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: consumer-service-httpbin-ws
+        tsb.tetrate.io/gatewayGroup: consumer-service-httpbin-gg
+    spec:
+      workloadSelector:
+        namespace: consumer-service-httpbin
+        labels:
+          app: consumer-service-httpbin-gw
+      http:
+        - name: httpbin
+          port: 80
+          hostname: "consumer-service-httpbin.gcp.cx.tetrate.info"
+          routing:
+            rules:
+              - route:
+                  host: "consumer-service-httpbin/httpbin.consumer-service-httpbin.svc.cluster.local"
+                  port: 8000

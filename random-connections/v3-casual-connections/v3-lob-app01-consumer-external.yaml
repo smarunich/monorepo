@@ -62,6 +62,69 @@ items:
         tls:
           mode: SIMPLE
           secretName: external-api-httpbin
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app01-ns-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-consumer-gg
+        tsb.tetrate.io/workspace: lob-app01-consumer-ws
+    spec:
+      workloadSelector:
+        namespace: lob-app01
+        labels:
+          app: lob-app01-consumer-t1
+      externalServers:
+      - hostname: external-api-httpbin.gcp.cx.tetrate.info
+        name: lob-app01-consumer
+        port: 80
+        clusters:
+        - name: gke-r160rc6p1-us-west1-0
+          weight: 100
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app01-cs-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-consumer-gg
+        tsb.tetrate.io/workspace: lob-app01-consumer-ws
+    spec:
+      workloadSelector:
+        namespace: lob-app01
+        labels:
+          app: lob-app01-consumer-t1
+      externalServers:
+      - hostname: consumer-service-httpbin.gcp.cx.tetrate.info
+        name: lob-app01-consumer
+        port: 80
+        clusters:
+        - name: aks-r160rc6p1-eastus-1
+          weight: 100
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app01-rg-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-consumer-gg
+        tsb.tetrate.io/workspace: lob-app01-consumer-ws
+    spec:
+      workloadSelector:
+        namespace: lob-app01
+        labels:
+          app: lob-app01-consumer-t1
+      externalServers:
+      - hostname: rogue-external-api-httpbin.gcp.cx.tetrate.info
+        name: lob-app01-rogue
+        port: 80
+        clusters:
+        - name: gke-r160rc6p1-us-west1-0
+          weight: 100
 ---
 apiVersion: v1
 data:

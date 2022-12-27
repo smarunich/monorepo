@@ -58,4 +58,3 @@ items:
         clusters:
         - name: gke-r160rc6p1-us-west1-0
           weight: 100
-

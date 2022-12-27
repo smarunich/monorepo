@@ -125,7 +125,7 @@ items:
         istio.io/rev: tsb
     spec:
       endpoints:
-      - address: 54.166.148.227
+      - address: 3.229.200.44
         labels:
           gateway: lob-app01-serviceentry
         ports:
