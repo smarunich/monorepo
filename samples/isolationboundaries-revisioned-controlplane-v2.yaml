@@ -1,0 +1,211 @@
+apiVersion: install.tetrate.io/v1alpha1
+kind: ControlPlane
+metadata:
+  annotations:
+    meta.helm.sh/release-name: controlplane
+    meta.helm.sh/release-namespace: istio-system
+  creationTimestamp: "2023-01-03T14:23:46Z"
+  finalizers:
+  - controlplanes.install.tetrate.io/cp-cleanup
+  generation: 4
+  labels:
+    app.kubernetes.io/instance: controlplane
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 1.6.0-internal-rc12
+    helm.sh/chart: controlplane-1.6.0-internal-rc12
+  name: controlplane
+  namespace: istio-system
+  resourceVersion: "156835"
+  uid: 64e19a63-f7aa-4518-b37c-b05ccc4e66c8
+spec:
+  components:
+    collector:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1000Mi
+            requests:
+              cpu: 400m
+              memory: 500Mi
+    gitops:
+      batchWindow: 1s
+      enabled: true
+      reconcileInterval: 600s
+    hpaAdapter:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+        service:
+          type: ClusterIP
+    internalCertProvider:
+      certManager:
+        managed: EXTERNAL
+    istio:
+      kubeSpec:
+        deployment:
+          hpaSpec:
+            maxReplicas: 10
+            metrics:
+            - resource:
+                name: cpu
+                targetAverageUtilization: 75
+              type: Resource
+            minReplicas: 1
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 4096Mi
+            requests:
+              cpu: 500m
+              memory: 2048Mi
+        overlays:
+        - apiVersion: install.istio.io/v1alpha1
+          kind: IstioOperator
+          name: tsb-istiocontrolplane
+          patches:
+          - path: spec.meshConfig.defaultConfig.holdApplicationUntilProxyStarts
+            value: true
+    ngac:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+    oap:
+      kubeSpec:
+        deployment:
+          containerSecurityContext:
+            runAsUser: 1000
+          replicaCount: 1
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 2Gi
+      streamingLogEnabled: true
+    onboarding:
+      operator:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
+          service:
+            type: ClusterIP
+      repository:
+        kubeSpec:
+          deployment:
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
+          service:
+            type: ClusterIP
+    rateLimitServer:
+      backend:
+        redis:
+          uri: redis-master.tsb-ratelimit.svc.cluster.local:6379
+      domain: local
+    satellite:
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 2Gi
+    xcp:
+      centralAuthMode: JWT
+      configProtection: {}
+      isolationBoundaries:
+      - name: global
+        revisions:
+        - istio:
+            kubeSpec:
+              CNI:
+                binaryDirectory: /opt/cni/bin
+                chained: true
+                configurationDirectory: /etc/cni/net.d
+            traceSamplingRate: 100
+            tsbVersion: 1.6.0-internal-rc12
+          name: stable
+      - name: dev
+        revisions:
+        - istio:
+            kubeSpec:
+              CNI:
+                binaryDirectory: /opt/cni/bin
+                chained: true
+                configurationDirectory: /etc/cni/net.d
+            traceSamplingRate: 100
+            tsbVersion: 1.6.0-internal-rc12
+          name: dev-stable
+      kubeSpec:
+        deployment:
+          env:
+          - name: ENABLE_GATEWAY_DELETE_HOLD
+            value: "true"
+          - name: GATEWAY_DELETE_HOLD_SECONDS
+            value: "20"
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
+          patches:
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_ENHANCED_EAST_WEST_ROUTING
+              value: "true"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: DISABLE_TIER1_TIER2_SEPARATION
+              value: "true"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_DNS_RESOLUTION_AT_EDGE
+              value: "true"
+        service:
+          type: ClusterIP
+  hub: r160rc12p11tsbacrls50jo3k2bta1jd4.azurecr.io
+  managementPlane:
+    clusterName: aks-r160rc12p1-eastus-1
+    host: r160rc12p1.azure.cx.tetrate.info
+    port: 443
+    selfSigned: true
+  meshExpansion: {}
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  telemetryStore:
+    elastic:
+      host: 20.102.14.148
+      port: 9200
+      selfSigned: true
+      version: 7
