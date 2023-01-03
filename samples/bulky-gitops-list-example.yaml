@@ -1,0 +1,511 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: gitops-bookinfo-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+      namespace: gitops-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/gitops-bookinfo"
+          - "*/gitops-tier1"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: gitops-bookinfo-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: gitops-bookinfo-ws
+      namespace: gitops-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/gitops-bookinfo"
+          - "*/gitops-tier1"
+      configMode: BRIDGED
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: gitops-bookinfo-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: gitops-bookinfo-ws
+      namespace: gitops-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/gitops-bookinfo"
+          - "*/gitops-tier1"
+      configMode: BRIDGED
+  - apiVersion: security.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: gitops-bookinfo-sg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: gitops-bookinfo-ws
+      namespace: gitops-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/gitops-bookinfo"
+          - "*/gitops-tier1"
+      configMode: BRIDGED
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: gitops-bookinfo-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: gitops-bookinfo-ws
+        tsb.tetrate.io/gatewayGroup: gitops-bookinfo-gg
+      namespace: dev-bookinfo
+    spec:
+      workloadSelector:
+        namespace: gitops-bookinfo
+        labels:
+          app: gitops-bookinfo-gw
+      http:
+        - name: productpage
+          port: 80
+          hostname: "gitops-bookinfo.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "gitops-bookinfo/productpage.gitops-bookinfo.svc.cluster.local"
+                  port: 9080
+        - name: details
+          port: 80
+          hostname: "gitops-details.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "gitops-bookinfo/details.gitops-bookinfo.svc.cluster.local"
+                  port: 9080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app: trafficgenerator
+      name: trafficgenerator
+      namespace: gitops-bookinfo
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      selector:
+        matchLabels:
+          app: trafficgenerator
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          labels:
+            app: trafficgenerator
+        spec:
+          containers:
+            - args:
+                - /bin/sh
+                - -c
+                - 'while true; do curl -i -H"Host: gitops-bookinfo.tetrate.io" gitops-bookinfo-gw.gitops-bookinfo/productpage; done'
+              image: appropriate/curl
+              imagePullPolicy: Always
+              name: trafficgenerator
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: dev-bookinfo-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+      namespace: dev-bookinfo
+    spec:
+      isolationBoundary: dev
+      namespaceSelector:
+        names:
+          - "*/dev-bookinfo"
+          - "*/dev-tier1"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: dev-bookinfo-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: dev-bookinfo-ws
+      namespace: dev-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/dev-bookinfo"
+          - "*/dev-tier1"
+      configMode: BRIDGED
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: dev-bookinfo-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: dev-bookinfo-ws
+      namespace: dev-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/dev-bookinfo"
+          - "*/dev-tier1"
+      configMode: BRIDGED
+  - apiVersion: security.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: dev-bookinfo-sg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: dev-bookinfo-ws
+      namespace: dev-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/dev-bookinfo"
+          - "*/dev-tier1"
+      configMode: BRIDGED
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: dev-bookinfo-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: dev-bookinfo-ws
+        tsb.tetrate.io/gatewayGroup: dev-bookinfo-gg
+      namespace: dev-bookinfo
+    spec:
+      workloadSelector:
+        namespace: dev-bookinfo
+        labels:
+          app: dev-bookinfo-gw
+      http:
+        - name: productpage
+          port: 80
+          hostname: "dev-bookinfo.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "dev-bookinfo/productpage.dev-bookinfo.svc.cluster.local"
+                  port: 9080
+        - name: details
+          port: 80
+          hostname: "dev-details.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "dev-bookinfo/details.dev-bookinfo.svc.cluster.local"
+                  port: 9080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app: trafficgenerator
+      name: trafficgenerator
+      namespace: dev-bookinfo
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      selector:
+        matchLabels:
+          app: trafficgenerator
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          labels:
+            app: trafficgenerator
+        spec:
+          containers:
+            - args:
+                - /bin/sh
+                - -c
+                - 'while true; do curl -i -H"Host: dev-bookinfo.tetrate.io" dev-bookinfo-gw.dev-bookinfo/productpage; done'
+              image: appropriate/curl
+              imagePullPolicy: Always
+              name: trafficgenerator
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: stg-bookinfo-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+      namespace: stg-bookinfo
+    spec:
+      isolationBoundary: stg
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: security.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-sg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: stg-bookinfo-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+        tsb.tetrate.io/gatewayGroup: stg-bookinfo-gg
+      namespace: stg-bookinfo
+    spec:
+      workloadSelector:
+        namespace: stg-bookinfo
+        labels:
+          app: stg-bookinfo-gw
+      http:
+        - name: productpage
+          port: 80
+          hostname: "stg-bookinfo.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "stg-bookinfo/productpage.stg-bookinfo.svc.cluster.local"
+                  port: 9080
+        - name: details
+          port: 80
+          hostname: "stg-details.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "stg-bookinfo/details.stg-bookinfo.svc.cluster.local"
+                  port: 9080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app: trafficgenerator
+      name: trafficgenerator
+      namespace: stg-bookinfo
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      selector:
+        matchLabels:
+          app: trafficgenerator
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          labels:
+            app: trafficgenerator
+        spec:
+          containers:
+            - args:
+                - /bin/sh
+                - -c
+                - 'while true; do curl -i -H"Host: stg-bookinfo.tetrate.io" stg-bookinfo-gw.stg-bookinfo/productpage; done'
+              image: appropriate/curl
+              imagePullPolicy: Always
+              name: trafficgenerator
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: stg-bookinfo-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+      namespace: stg-bookinfo
+    spec:
+      isolationBoundary: stg
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: security.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: stg-bookinfo-sg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+      namespace: stg-bookinfo
+    spec:
+      namespaceSelector:
+        names:
+          - "*/stg-bookinfo"
+          - "*/stg-tier1"
+      configMode: BRIDGED
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: stg-bookinfo-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: stg-bookinfo-ws
+        tsb.tetrate.io/gatewayGroup: stg-bookinfo-gg
+      namespace: stg-bookinfo
+    spec:
+      workloadSelector:
+        namespace: stg-bookinfo
+        labels:
+          app: stg-bookinfo-gw
+      http:
+        - name: productpage
+          port: 80
+          hostname: "stg-bookinfo.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "stg-bookinfo/productpage.stg-bookinfo.svc.cluster.local"
+                  port: 9080
+        - name: details
+          port: 80
+          hostname: "stg-details.tetrate.io"
+          routing:
+            rules:
+              - route:
+                  host: "stg-bookinfo/details.stg-bookinfo.svc.cluster.local"
+                  port: 9080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app: trafficgenerator
+      name: trafficgenerator
+      namespace: stg-bookinfo
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      selector:
+        matchLabels:
+          app: trafficgenerator
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          labels:
+            app: trafficgenerator
+        spec:
+          containers:
+            - args:
+                - /bin/sh
+                - -c
+                - 'while true; do curl -i -H"Host: stg-bookinfo.tetrate.io" stg-bookinfo-gw.stg-bookinfo/productpage; done'
+              image: appropriate/curl
+              imagePullPolicy: Always
+              name: trafficgenerator
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
