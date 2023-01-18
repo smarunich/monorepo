@@ -1,0 +1,85 @@
+image:
+  registry: r16x01sw0ts4dsff42dffdctuc.azurecr.io
+  tag: 1.6.0
+operator:
+  deployment:
+    podAnnotations:
+      security-check: runtime/default
+    podSecurityContext:
+      fsGroup: 65535
+      supplementalGroups:
+      - 65535
+    containerSecurityContext:
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      runAsUser: 65535
+      runAsGroup: 65535
+      privileged: false
+      allowPrivilegeEscalation: false
+spec:
+  components:
+    defaultKubeSpec:
+      deployment:
+        pod_annotations:
+          security-check: runtime/default
+        podSecurityContext:
+          fsGroup: 65535
+          supplementalGroups:
+          - 65535
+        containerSecurityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          runAsUser: 65535
+          runAsGroup: 65535
+          privileged: false
+          allowPrivilegeEscalation: false
+      job:
+        pod_annotations:
+          security-check: runtime/default
+        podSecurityContext:
+          fsGroup: 65535
+          supplementalGroups:
+          - 65535
+        containerSecurityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          runAsUser: 65535
+          runAsGroup: 65535
+          privileged: false
+          allowPrivilegeEscalation: false
+    frontEnvoy:
+      port: 443
+    internalCertProvider:
+      certManager:
+        managed: EXTERNAL
+    oap:
+      streamingLogEnabled: true
+      kubeSpec:
+        deployment:
+          containerSecurityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 1000
+            runAsGroup: 1000
+    webUI:
+      kubeSpec:
+        overlays:
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: web
+          patches:
+          - path: spec.template.spec.containers.[name:web].env[-1]
+            value:
+              name: SESSION_AGE_IN_MINUTES
+              value: "60"
+    xcp:
+      centralAuthModes:
+        jwt: true
+  hub: r16x01sw0ts4dsff42dffdctuc.azurecr.io
+  organization: tetrate
+  telemetryStore:
+    elastic:
+      host: 2.2.2.2
+      port: 9200
+      protocol: https
+      selfSigned: true
+      version: 7

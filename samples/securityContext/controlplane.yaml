@@ -1,0 +1,77 @@
+image:
+  registry: r16x01sw0ts4dsff42dffdctuc.azurecr.io
+  tag: 1.6.0
+operator:
+  deployment:
+    env:
+    - name: ISTIO_ISOLATION_BOUNDARIES
+      value: "false"
+    podAnnotations:
+      security-check: runtime/default
+    podSecurityContext:
+      fsGroup: 65535
+      supplementalGroups:
+      - 65535
+    containerSecurityContext:
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      runAsUser: 65535
+      runAsGroup: 65535
+      privileged: false
+      allowPrivilegeEscalation: false
+spec:
+  components:
+    defaultKubeSpec:
+      deployment:
+        pod_annotations:
+          security-check: runtime/default
+        podSecurityContext:
+          fsGroup: 65535
+          supplementalGroups:
+          - 65535
+        containerSecurityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          runAsUser: 65535
+          runAsGroup: 65535
+          privileged: false
+          allowPrivilegeEscalation: false
+    gitops:
+      enabled: true
+      reconcileInterval: 600s
+    internalCertProvider:
+      certManager:
+        managed: EXTERNAL
+    oap:
+      streamingLogEnabled: true
+      kubeSpec:
+        deployment:
+          containerSecurityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 1000
+            runAsGroup: 1000
+    rateLimitServer:
+      backend:
+        redis:
+          uri: redis-master.tsb-ratelimit.svc.cluster.local:6379
+      domain: local
+    xcp:
+      centralAuthMode: JWT
+      configProtection: {}
+      enableHttpMeshInternalIdentityPropagation: false
+  hub: r16x01sw0ts4dsff42dffdctuc.azurecr.io
+  managementPlane:
+    clusterName: aks-r16x01sw-canadacentral-2
+    host: rct16x01sw.azure.cx.tetrate.info
+    port: 443
+    selfSigned: true
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  telemetryStore:
+    elastic:
+      host: 2.2.2.2
+      port: 9200
+      protocol: https
+      selfSigned: true
+      version: 7
