@@ -1,0 +1,36 @@
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  name: productpage-service-ss
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: payment
+    tsb.tetrate.io/workspace: payment-ws
+    tsb.tetrate.io/securityGroup: channel-sg
+spec:
+  service: payment-channel/productpage.payment-channel.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+      http: 
+        jwt:
+          issuer: "testing@tetrate.io"
+          jwks: '{ "keys":[ {"e":"AQAB","kid":"ZWwdTjm_c8FR-TBYnKaL24dL5PKsi1n9cgW-E_aCXvE","kty":"RSA","n":"0QWroNr3SNvYNpTJ4gTUQ9ZB-G18o1bOhY8EATNILifW_dVeq9gWG_zupr4gMVaLwTlwubKXNKpItLPf86GmhLKgx8AICRz484Oek9Por1J9xyF6PkqP_KmjM4mA0kLpI7M4b6wDCIPHmd2WJaNV8p8sZuL5BYC2_S2NFBAxB-rIBd6Vvu1W2qkbW39Oa-4CArDfJj8VYCsm9rAs6-cvwayNLFCNzY-ZPeY8mZMGsm0R-3hwRzt4FNXT_dbqQq-h3Cn4_ShsxF-9gVJ-Dthabqe8-HQtr9N-AX6hnn8rNnJOzf5g2jr6KrUglCW8rjYebYP6adVjKivUB8K7e0vlfQ"}]}'
+    authorization: 
+      mode: GROUP
+      http:
+        local:
+          rules:
+            - name: user
+              from:
+                - jwt:
+                    sub: "testing@tetrate.io"
+                    iss: "testing@tetrate.io"
+                    other:
+                      aud: "productpage"
+                      group: "bookinfo"
+              to:
+                - paths: ["*"]
+
+    

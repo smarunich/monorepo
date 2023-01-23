@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: lob-app02-consumer-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      displayName: lob-app02-consumer-ws
+      namespaceSelector:
+        names:
+        - eks-bk-lts-eu-west-1-2/lob-app02
+      privileged: false
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: lob-app02-consumer-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app02-consumer-ws
+    spec:
+      configMode: BRIDGED
+      displayName: lob-app02-consumer-gg
+      namespaceSelector:
+        names:
+        - eks-bk-lts-eu-west-1-2/lob-app02
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app02-consumer-t1
+      namespace: lob-app02
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app02-int-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app02-consumer-gg
+        tsb.tetrate.io/workspace: lob-app02-consumer-ws
+    spec:
+      workloadSelector:
+        namespace: lob-app02
+        labels:
+          app: lob-app02-consumer-t1
+      internalServers:
+      - hostname: internal-api-httpbin.gcp.cx.tetrate.info
+        name: lob-app02-consumer
+        clusters:
+        - name: eks-bk-lts-us-east-1-0
+          weight: 100

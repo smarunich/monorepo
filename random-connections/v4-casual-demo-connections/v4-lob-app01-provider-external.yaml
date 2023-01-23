@@ -1,0 +1,172 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: lob-app01-provider-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      displayName: lob-app01-provider-ws
+      namespaceSelector:
+        names:
+        - eks-bk-lts-us-east-1-0/lob-app01
+      privileged: false
+  - apiVersion: istiointernal.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: lob-app01-provider-ig
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+    spec:
+      displayName: lob-app01-provider-ig
+      namespaceSelector:
+        names:
+        - eks-bk-lts-us-east-1-0/lob-app01
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: lob-app01-provider-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+    spec:
+      configMode: DIRECT
+      displayName: lob-app01-provider-tg
+      namespaceSelector:
+        names:
+        - eks-bk-lts-us-east-1-0/lob-app01
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: lob-app01-provider-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+    spec:
+      configMode: DIRECT
+      displayName: lob-app01-provider-gg
+      namespaceSelector:
+        names:
+        - eks-bk-lts-us-east-1-0/lob-app01
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: Tier1Gateway
+    metadata:
+      name: lob-app01-provider-t1
+      namespace: lob-app01
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: networking.istio.io/v1beta1
+    kind: Gateway
+    metadata:
+      name: lob-app01-gateway
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-provider-gg
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      selector:
+        app: lob-app01-provider-t1
+      servers:
+      - hosts:
+        - external-api-httpbin.gcp.cx.tetrate.info
+        port:
+          name: mtls-multicluster
+          number: 16443
+          protocol: HTTP
+  - apiVersion: networking.istio.io/v1beta1
+    kind: DestinationRule
+    metadata:
+      name: lob-app01-dr
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+        tsb.tetrate.io/trafficGroup: lob-app01-provider-tg
+      labels:
+        istio.io/rev: tsb
+    spec:
+      exportTo:
+      - .
+      host: httpbin.org
+      subsets:
+      - labels:
+          gateway: lob-app01-serviceentry
+        name: lob-app01-subset
+        trafficPolicy:
+          portLevelSettings:
+          - port:
+              number: 443
+            tls:
+              mode: SIMPLE
+              sni: httpbin.org
+  - apiVersion: networking.istio.io/v1beta1
+    kind: ServiceEntry
+    metadata:
+      name: lob-app01-serviceentry
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/istioInternalGroup: lob-app01-provider-ig
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      endpoints:
+      - address: 34.224.50.110
+        labels:
+          gateway: lob-app01-serviceentry
+        ports:
+          lob-app01-port: 443
+      exportTo:
+      - '*'
+      hosts:
+      - httpbin.org
+      location: MESH_EXTERNAL
+      ports:
+      - name: lob-app01-port
+        number: 443
+        protocol: TLS
+      resolution: DNS
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: lob-app01-virtualservice
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: lob-app01-provider-gg
+        tsb.tetrate.io/workspace: lob-app01-provider-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      gateways:
+      - lob-app01/lob-app01-gateway
+      hosts:
+      - external-api-httpbin.gcp.cx.tetrate.info
+      http:
+      - match:
+        - port: 15443
+        headers:
+          request:
+            set:
+              host: "httpbin.org"
+        route:
+        - destination:
+            host: httpbin.org
+            port:
+              number: 443
+            subset: lob-app01-subset
+
