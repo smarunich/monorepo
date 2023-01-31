@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: untrusted-landing-02-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      displayName: untrusted-landing-02-ws
+      namespaceSelector:
+        names:
+        - aks-r160d5-eastus-0/untrusted-02
+      privileged: false
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: untrusted-landing-02-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: untrusted-landing-02-ws
+    spec:
+      configMode: BRIDGED
+      displayName: untrusted-landing-02-gg
+      namespaceSelector:
+        names:
+        - aks-r160d5-eastus-0/untrusted-02
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: Tier1Gateway
+    metadata:
+      name: untrusted-landing-02-t1
+      namespace: untrusted-02
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: ut-02-int-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: untrusted-landing-02-gg
+        tsb.tetrate.io/workspace: untrusted-landing-02-ws
+    spec:
+      workloadSelector:
+        namespace: untrusted-02
+        labels:
+          app: untrusted-landing-02-t1
+      internalServers:
+      - hostname: internal-api-httpbin.gcp.cx.tetrate.info
+        name: untrusted-landing-02
+        clusters:
+        - name: gke-r160d5-us-west1-0
+          weight: 100
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: ut-02-ext-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: untrusted-landing-02-gg
+        tsb.tetrate.io/workspace: untrusted-landing-02-ws
+    spec:
+      workloadSelector:
+        namespace: untrusted-02
+        labels:
+          app: untrusted-landing-02-t1
+      externalServers:
+      - hostname: internal-api-httpbin.gcp.cx.tetrate.info
+        name: untrusted-landing-02
+        port: 80
+        clusters:
+        - name: gke-r160d5-us-west1-0
+          weight: 100

@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: trusted-landing-02-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      displayName: trusted-landing-02-ws
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-02
+      privileged: false
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: trusted-landing-02-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: trusted-landing-02-ws
+    spec:
+      configMode: BRIDGED
+      displayName: trusted-landing-02-gg
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-02
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: Tier1Gateway
+    metadata:
+      name: trusted-landing-02-t1
+      namespace: trusted-02
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Tier1Gateway
+    metadata:
+      name: t-02-int-t1
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: trusted-landing-02-gg
+        tsb.tetrate.io/workspace: trusted-landing-02-ws
+    spec:
+      workloadSelector:
+        namespace: trusted-02
+        labels:
+          app: trusted-landing-02-t1
+      internalServers:
+      - hostname: internal-api-httpbin.gcp.cx.tetrate.info
+        name: trusted-landing-02
+        clusters:
+        - name: gke-r160d5-us-west1-1
+          weight: 100

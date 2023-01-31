@@ -1,0 +1,172 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: trusted-landing-01-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      displayName: trusted-landing-01-ws
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-01
+      privileged: false
+  - apiVersion: istiointernal.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: trusted-landing-01-ig
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+    spec:
+      displayName: trusted-landing-01-ig
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-01
+  - apiVersion: traffic.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: trusted-landing-01-tg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+    spec:
+      configMode: DIRECT
+      displayName: trusted-landing-01-tg
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-01
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: trusted-landing-01-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+    spec:
+      configMode: DIRECT
+      displayName: trusted-landing-01-gg
+      namespaceSelector:
+        names:
+        - gke-r160d5-us-west1-0/trusted-01
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: Tier1Gateway
+    metadata:
+      name: trusted-landing-01-t1
+      namespace: trusted-01
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: networking.istio.io/v1beta1
+    kind: Gateway
+    metadata:
+      name: trusted-01-gateway
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: trusted-landing-01-gg
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      selector:
+        app: trusted-landing-01-t1
+      servers:
+      - hosts:
+        - external-api-httpbin.gcp.cx.tetrate.info
+        port:
+          name: mtls-multicluster
+          number: 16443
+          protocol: HTTP
+  - apiVersion: networking.istio.io/v1beta1
+    kind: DestinationRule
+    metadata:
+      name: trusted-01-dr
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+        tsb.tetrate.io/trafficGroup: trusted-landing-01-tg
+      labels:
+        istio.io/rev: tsb
+    spec:
+      exportTo:
+      - .
+      host: httpbin.org
+      subsets:
+      - labels:
+          gateway: trusted-01-serviceentry
+        name: trusted-01-subset
+        trafficPolicy:
+          portLevelSettings:
+          - port:
+              number: 443
+            tls:
+              mode: SIMPLE
+              sni: httpbin.org
+  - apiVersion: networking.istio.io/v1beta1
+    kind: ServiceEntry
+    metadata:
+      name: trusted-01-serviceentry
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/istioInternalGroup: trusted-landing-01-ig
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      endpoints:
+      - address: 34.224.50.110
+        labels:
+          gateway: trusted-01-serviceentry
+        ports:
+          trusted-01-port: 443
+      exportTo:
+      - '*'
+      hosts:
+      - httpbin.org
+      location: MESH_EXTERNAL
+      ports:
+      - name: trusted-01-port
+        number: 443
+        protocol: TLS
+      resolution: DNS
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: trusted-01-virtualservice
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/gatewayGroup: trusted-landing-01-gg
+        tsb.tetrate.io/workspace: trusted-landing-01-ws
+      labels:
+        istio.io/rev: tsb
+    spec:
+      gateways:
+      - trusted-01/trusted-01-gateway
+      hosts:
+      - external-api-httpbin.gcp.cx.tetrate.info
+      http:
+      - match:
+        - port: 15443
+        headers:
+          request:
+            set:
+              host: "httpbin.org"
+        route:
+        - destination:
+            host: httpbin.org
+            port:
+              number: 443
+            subset: trusted-01-subset
+

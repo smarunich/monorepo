@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: tsb.tetrate.io/v2
+    kind: Workspace
+    metadata:
+      name: internal-api-httpbin-ws
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+    spec:
+      namespaceSelector:
+        names:
+          - "*/internal-api-httpbin"
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: Group
+    metadata:
+      name: internal-api-httpbin-gg
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: internal-api-httpbin-ws
+    spec:
+      namespaceSelector:
+        names:
+          - "*/internal-api-httpbin"
+      configMode: BRIDGED
+  - apiVersion: install.tetrate.io/v1alpha1
+    kind: IngressGateway
+    metadata:
+      name: internal-api-httpbin-gw
+      namespace: internal-api-httpbin
+    spec:
+      kubeSpec:
+        service:
+          type: LoadBalancer
+  - apiVersion: gateway.tsb.tetrate.io/v2
+    kind: IngressGateway
+    metadata:
+      name: internal-api-httpbin-igw
+      annotations:
+        tsb.tetrate.io/organization: tetrate
+        tsb.tetrate.io/tenant: dev
+        tsb.tetrate.io/workspace: internal-api-httpbin-ws
+        tsb.tetrate.io/gatewayGroup: internal-api-httpbin-gg
+    spec:
+      workloadSelector:
+        namespace: internal-api-httpbin
+        labels:
+          app: internal-api-httpbin-gw
+      http:
+        - name: httpbin
+          port: 80
+          hostname: "internal-api-httpbin.gcp.cx.tetrate.info"
+          routing:
+            rules:
+              - route:
+                  host: "internal-api-httpbin/httpbin.internal-api-httpbin.svc.cluster.local"
+                  port: 8000
