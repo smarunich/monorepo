@@ -1,0 +1,23 @@
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: bookinfo-gw
+  namespace: bookinfo-gw
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer
+    deployment:
+      pod_annotations:
+        security-check: runtime/default
+      podSecurityContext:
+        fsGroup: 65535
+        supplementalGroups:
+        - 65535
+      containerSecurityContext:
+        runAsNonRoot: true
+        readOnlyRootFilesystem: true
+        runAsUser: 65535
+        runAsGroup: 65535
+        privileged: false
+        allowPrivilegeEscalation: false
