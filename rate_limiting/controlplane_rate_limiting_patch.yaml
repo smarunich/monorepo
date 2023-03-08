@@ -1,0 +1,7 @@
+spec:
+  components:
+    rateLimitServer:
+      domain: local
+      backend:
+        redis:
+          uri: redis-master.tsb-ratelimit.svc.cluster.local:6379
