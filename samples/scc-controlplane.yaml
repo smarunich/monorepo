@@ -1,0 +1,44 @@
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  annotations:
+    platform.tsb.tetrate.io/application: istio-operator
+    platform.tsb.tetrate.io/component: istio
+    platform.tsb.tetrate.io/plane: control
+    kubernetes.io/description: SCC used by TSB ControlPlane components
+  name: tsb-controlplane
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: false
+allowedCapabilities: null
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+priority: 100
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+  - MKNOD
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+  - system:serviceaccount:istio-system:xcp-edge
+  - system:serviceaccount:istio-system:istiod
+  - system:serviceaccount:istio-system:istio-system-oap
+  - system:serviceaccount:istio-system:vmgateway-service-account
+  - system:serviceaccount:kube-system:istio-cni
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - persistentVolumeClaim
+  - projected
+  - secret
