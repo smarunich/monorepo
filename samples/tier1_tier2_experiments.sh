@@ -101,6 +101,8 @@ spec:
       multiCluster:
         clusterName: $CLUSTER2_ID
       network: $NETWORK2_ID
+  meshConfig:
+    accessLogFile: /dev/stdout
 EOF
 
 getmesh switch 1.17.2-tetrate-v0
@@ -140,12 +142,12 @@ kubectl --context="${CLUSTER2_CTX}" apply -n istio-system -f ${CLUSTER2_ID}_EWGW
 # Enable Endpoint Discovery
 istioctl x create-remote-secret \
   --context="${CLUSTER1_CTX}" \
-  --name=$CLUSTER_ID | \
+  --name=$CLUSTER1_ID | \
   kubectl apply -f - --context="${CLUSTER2_CTX}"
 
 istioctl x create-remote-secret \
   --context="${CLUSTER2_CTX}" \
-  --name=$CLUSTER_ID | \
+  --name=$CLUSTER2_ID | \
   kubectl apply -f - --context="${CLUSTER1_CTX}"
 
 
