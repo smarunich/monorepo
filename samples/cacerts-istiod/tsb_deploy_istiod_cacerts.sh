@@ -1,5 +1,4 @@
 export FOLDER='.'
-export NAME_PREFIX='internal'
 
 function create_cert() {
   local readonly name=$1
@@ -59,7 +58,7 @@ subjectAltName       = @alt_names
 DNS.1 = istiod.istio-system.svc
 EOF
 
-create_cert istiod_${NAME_PREFIX}_intermediate_ca \
+create_cert istiod_intermediate_ca \
   "${FOLDER}" \
   "${FOLDER}/istiod_intermediate_ca.cnf" \
   "${FOLDER}/ca.crt" \
