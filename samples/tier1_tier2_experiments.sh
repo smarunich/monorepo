@@ -43,6 +43,12 @@ spec:
       network: $NETWORK1_ID
   meshConfig:
     accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyMetadata:
+        # Enable basic DNS proxying
+        ISTIO_META_DNS_CAPTURE: "true"
+        # Enable automatic address allocation, optional
+        ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 EOF
 
 getmesh switch 1.17.2-tetrate-v0
@@ -103,6 +109,12 @@ spec:
       network: $NETWORK2_ID
   meshConfig:
     accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyMetadata:
+        # Enable basic DNS proxying
+        ISTIO_META_DNS_CAPTURE: "true"
+        # Enable automatic address allocation, optional
+        ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 EOF
 
 getmesh switch 1.17.2-tetrate-v0
