@@ -1,5 +1,5 @@
 export FOLDER='.'
-export NAME_PREFIX=`internal`
+export NAME_PREFIX='internal'
 
 function create_cert() {
   local readonly name=$1
