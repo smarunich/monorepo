@@ -1,6 +1,6 @@
 # Custom Envoyfilter to modify tcp.connectTimeout for the defined service
 
-1(a). Identify the cluster you want to modify the ```tcp.connectTimeout``
+1(a). Identify the cluster you want to modify the ```tcp.connectTimeout```
 
 ```sh
 ~/workspace/smarunich/sandbox-r172d1/outputs main !1 ?6 ❯ istioctl pc endpoint tier1-gw-6dcc96f4d9-nckx6 -n tier1                                   ✘ INT ⎈ azure-r172d1-eastus-0
@@ -16,7 +16,17 @@ unix://./etc/istio/proxy/XDS                            HEALTHY     OK          
 unix://./var/run/secrets/workload-spiffe-uds/socket     HEALTHY     OK                sds-grpc
 ```
 
-1(b). Identify the cluster you want to modify the ```tcp.connectTimeout``
+1(b) Identify the cluster you want to modify the ```tcp.connectTimeout``` by checking GatewayLogs
+If you send connection to the service your hitting for northsouth traffic the gateway should present logs which includes the cluster name we need for the envoyfilter
+```sh
+kubectl logs deploy/tier1-gw
+[2023-10-24T14:37:51.491Z] "HEAD /productpage HTTP/1.1" 200 - via_upstream - "-" 0 0 31 31 "172.20.0.5" "curl/8.1.2" "ecb8976d-cabf-43f9-80c1-d4f7ad1148c4" "bookinfo.tetrate.io" "10.0.80.75:15443" outbound|80|tier1-igw-bookinfo-external-port-80|bookinfo.tetrate.io 10.244.1.14:48680 10.244.1.14:8080 172.20.0.5:7826 - tier1-igw-bookinfo-external
+[2023-10-24T14:37:55.697Z] "HEAD /productpage HTTP/1.1" 200 - via_upstream - "-" 0 0 40 40 "10.244.1.1" "curl/8.1.2" "0a477562-60c3-4b29-b54d-2ca0b3acba26" "bookinfo.tetrate.io" "10.0.80.75:15443" outbound|80|tier1-igw-bookinfo-external-port-80|bookinfo.tetrate.io 10.244.1.14:48672 10.244.1.14:8080 10.244.1.1:59617 - tier1-igw-bookinfo-external
+[2023-10-24T14:37:59.937Z] "HEAD /productpage HTTP/1.1" 200 - via_upstream - "-" 0 0 31 31 "172.20.0.7" "curl/8.1.2" "030cb32d-4800-44f0-b2a5-4c37a9511567" "bookinfo.tetrate.io" "10.0.80.75:15443" outbound|80|tier1-igw-bookinfo-external-port-80|bookinfo.tetrate.io 10.244.1.14:48672 10.244.1.14:8080 172.20.0.7:40175 - tier1-igw-bookinfo-external
+```
+Look for the cluster from the logs, in this example is: ```outbound|80|tier1-igw-bookinfo-external-port-80|bookinfo.tetrate.io```
+
+1(c). Identify the cluster you want to modify the ```tcp.connectTimeout```
  without istioctl
 
 ```yaml
