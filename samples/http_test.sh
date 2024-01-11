@@ -39,15 +39,27 @@ while true; do
   # Increment the total attempts counter
   ((TOTAL_ATTEMPTS++))
 
-  echo -e "${BLUE}$(date +"%H:%M:%S")${NC} connecting to ${GREEN}https://bookinfo.tetrate.com${NC}..."
-  OUTPUT=$(http -h --verify false https://bookinfo.tetrate.com --timeout 1 2>&1)
+  echo -e "${BLUE}$(date +"%H:%M:%S")${NC} connecting to ${GREEN}fx.internal.az-ms.com${NC}..."
+  OUTPUT=$(curl -Ivs http://fx.internal.az-ms.com 2>&1)
 
   if echo "$OUTPUT" | grep -q "error"; then
     # Increment the failure counter
     ((FAIL_COUNT++))
-    echo -e "${RED}$OUTPUT${NC}"
+    echo -e "${GREEN}$OUTPUT${NC}"
   else
-    echo -e "${GREEN}$OUTPUT${NC}" | grep --color=always -E "HTTP|tier1-region|tier2-region"
+    # Extract, color code the IP in 'Connected to' line, and display it
+    CONNECTED_LINE=$(echo "$OUTPUT" | grep -E 'Connected to' | head -n 1)
+    echo -e "${CONNECTED_LINE}" | sed -r 's/([0-9]{1,3}(\.[0-9]{1,3}){3})/'$'\e[33m''&'$'\e[39m''/'
+
+    # Extract, color code, and display the 'location:' line
+    LOCATION_LINE=$(echo "$OUTPUT" | grep -E 'location:' | head -n 1)
+    if echo "$LOCATION_LINE" | grep -q "eastus"; then
+      echo -e "${LOCATION_LINE}" | sed 's/eastus/'$'\e[34m''&'$'\e[39m''/'
+    elif echo "$LOCATION_LINE" | grep -q "centralus"; then
+      echo -e "${LOCATION_LINE}" | sed 's/centralus/'$'\e[32m''&'$'\e[39m''/'
+    else
+      echo -e "${LOCATION_LINE}"
+    fi
   fi
 
   sleep 0.5
