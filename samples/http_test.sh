@@ -60,6 +60,10 @@ while true; do
     else
       echo -e "${LOCATION_LINE}"
     fi
+
+    # Extract and display the 'x-envoy-upstream-service-time' line
+    ENVOY_TIME_LINE=$(echo "$OUTPUT" | grep -E 'x-envoy-upstream-service-time:' | head -n 1)
+    echo -e "${ENVOY_TIME_LINE}"
   fi
 
   sleep 0.5
