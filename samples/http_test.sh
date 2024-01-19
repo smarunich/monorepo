@@ -12,13 +12,13 @@ FAIL_COUNT=0
 TOTAL_ATTEMPTS=0
 
 # Record the start time
-START_TIME=$(date +%s)
+INIT_TIME=$(date +%s)
 
 # Function to print stats and exit
 print_stats_and_exit() {
     # Calculate time duration
-    END_TIME=$(date +%s)
-    DURATION=$((END_TIME - START_TIME))
+    STOP_TIME=$(date +%s)
+    DURATION=$((STOP_TIME - INIT_TIME))
 
     # Convert duration to hours, minutes, and seconds
     HOURS=$((DURATION / 3600))
@@ -39,9 +39,9 @@ while true; do
   # Increment the total attempts counter
   ((TOTAL_ATTEMPTS++))
 
-  echo -e "${BLUE}$(date +"%H:%M:%S")${NC} connecting to ${GREEN}fx.internal.az-ms.com${NC}..."
+  echo -e "${GREEN}$(date +"%H:%M:%S")${NC} connecting to ${GREEN}fx.internal.az-ms.com${NC}..."
   START_TIME=$(date +%s.%N)
-  OUTPUT=$(curl -Ivs http://fx.internal.az-ms.com 2>&1)
+  OUTPUT=$(curl -Ivs --connect-timeout 1 http://fx.internal.az-ms.com 2>&1)
   END_TIME=$(date +%s.%N)
   ELAPSED_TIME=$(echo "$END_TIME - $START_TIME" | bc)
 
@@ -53,7 +53,7 @@ while true; do
     # Extract, color code the IP in 'Connected to' line, and display it
     CONNECTED_LINE=$(echo "$OUTPUT" | grep -E 'Connected to' | head -n 1)
     echo -e "${CONNECTED_LINE}" | sed -r 's/([0-9]{1,3}(\.[0-9]{1,3}){3})/'$'\e[33m''&'$'\e[39m''/'
-    
+
     # Extract and display the line containing the HTTP response code
     RESPONSE_CODE_LINE=$(echo "$OUTPUT" | grep -E 'HTTP/' | tail -1)
     echo -e "${RESPONSE_CODE_LINE}"
@@ -69,8 +69,8 @@ while true; do
     fi
 
     # Extract and display the 'x-envoy-upstream-service-time' line
-    ENVOY_TIME_LINE=$(echo "$OUTPUT" | grep -E 'x-envoy-upstream-service-time:' | head -n 1)
-    echo -e "${ENVOY_TIME_LINE}"
+    # ENVOY_TIME_LINE=$(echo "$OUTPUT" | grep -E 'x-envoy-upstream-service-time:' | head -n 1)
+    # echo -e "${ENVOY_TIME_LINE}"
 
 
 
@@ -78,5 +78,5 @@ while true; do
     echo -e "Time taken for request: ${ELAPSED_TIME}s"
   fi
 
-  sleep 0.5
+  sleep 1
 done
