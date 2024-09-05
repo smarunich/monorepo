@@ -1,4 +1,16 @@
 
+mergeGateways...
+
+```
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: custom-proxy-config
+  namespace: envoy-gateway-system
+spec:
+  mergeGateways: true
+```
+
 https://gateway.envoyproxy.io/latest/tasks/operations/customize-envoyproxy/
 
 ```sh
