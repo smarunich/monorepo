@@ -1,0 +1,52 @@
+# https://learncloudnative.com/blog/2022-09-08-ratelimit-istio
+kubectl apply -f - <<EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: edge-ratelimit
+  namespace: edge
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.local_ratelimit
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+          value:
+            filter_enabled:
+              default_value:
+                denominator: HUNDRED
+                numerator: 100
+              runtime_key: local_rate_limit_enabled
+            filter_enforced:
+              default_value:
+                denominator: HUNDRED
+                numerator: 100
+              runtime_key: local_rate_limit_enforced
+            response_headers_to_add:
+            - append_action: APPEND_IF_EXISTS_OR_ADD
+              header:
+                key: x-rate-limited
+                value: TOO_MANY_REQUESTS
+            stat_prefix: http_local_rate_limiter
+            status:
+              code: BadRequest
+            token_bucket:
+              fill_interval: 120s
+              max_tokens: 50
+              tokens_per_fill: 10
+  workloadSelector:
+    labels:
+      app: edge-gw
+EOF
