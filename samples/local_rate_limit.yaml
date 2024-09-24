@@ -1,63 +1,16 @@
-# https://learncloudnative.com/blog/2022-09-08-ratelimit-istio
-kubectl apply -f - <<EOF
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   name: edge-ratelimit
   namespace: edge
-spec:
-  configPatches:
-  - applyTo: HTTP_FILTER
-    match:
-      context: GATEWAY
-      listener:
-        filterChain:
-          filter:
-            name: envoy.filters.network.http_connection_manager
-            subFilter:
-              name: envoy.filters.http.router
-    patch:
-      operation: INSERT_BEFORE
-      value:
-        name: envoy.filters.http.local_ratelimit
-        typed_config:
-          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
-          value:
-            filter_enabled:
-              default_value:
-                denominator: HUNDRED
-                numerator: 100
-              runtime_key: local_rate_limit_enabled
-            filter_enforced:
-              default_value:
-                denominator: HUNDRED
-                numerator: 100
-              runtime_key: local_rate_limit_enforced
-            response_headers_to_add:
-            - append_action: APPEND_IF_EXISTS_OR_ADD
-              header:
-                key: x-rate-limited
-                value: TOO_MANY_REQUESTS
-            stat_prefix: http_local_rate_limiter
-            status:
-              code: BadRequest
-            token_bucket:
-              fill_interval: 120s
-              max_tokens: 50
-              tokens_per_fill: 10
-  workloadSelector:
-    labels:
-      app: edge-gw
-EOF
-
-# 
-kubectl apply -f - <<EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: edge-ratelimit
-  namespace: edge
+  annotations:
+    tsb.tetrate.io/organization: tfc
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: edge-ws
+    tsb.tetrate.io/istioInternalGroup: edge-ig
+  labels:
+    istio.io/rev: tsb
 spec:
   workloadSelector:
     labels:
@@ -79,6 +32,45 @@ spec:
             type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
             value:
               stat_prefix: http_local_rate_limiter
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            name: "apibin.tfc.dogfood.sandbox.tetrate.io:8080"
+      patch:
+        operation: MERGE
+        value:
+          rate_limits:
+            - actions:
+                - request_headers:
+                    header_name: ':path'
+                    descriptor_key: path
+                - request_headers:
+                    header_name: ':method'
+                    descriptor_key: method
+                - request_headers:
+                    header_name: 'user'
+                    descriptor_key: user
+            - actions:
+                - request_headers:
+                    header_name: ':path'
+                    descriptor_key: path
+                - request_headers:
+                    header_name: ':method'
+                    descriptor_key: method
+            - actions:
+                - request_headers:
+                    header_name: ':path'
+                    descriptor_key: path 
+            - actions:
+                - request_headers:
+                    header_name: ':method'
+                    descriptor_key: method  
+            - actions:
+                - request_headers:
+                    header_name: 'user'
+                    descriptor_key: user                 
     - applyTo: HTTP_ROUTE
       match:
         context: GATEWAY
@@ -97,8 +89,8 @@ spec:
               value:
                 stat_prefix: http_local_rate_limiter
                 token_bucket:
-                  max_tokens: 4
-                  tokens_per_fill: 4
+                  max_tokens: 100
+                  tokens_per_fill: 100
                   fill_interval: 60s
                 filter_enabled:
                   runtime_key: local_rate_limit_enabled
@@ -110,9 +102,41 @@ spec:
                   default_value:
                     numerator: 100
                     denominator: HUNDRED
+                descriptors:
+                  - entries:
+                      - key: path
+                        value: /get/order
+                      - key: method
+                        value: GET
+                    token_bucket:
+                      max_tokens: 1
+                      tokens_per_fill: 1
+                      fill_interval: 60s
+                  - entries:
+                      - key: path
+                        value: /get/history
+                      - key: method
+                        value: GET
+                    token_bucket:
+                      max_tokens: 10
+                      tokens_per_fill: 10
+                      fill_interval: 60s
+                  - entries:
+                      - key: method
+                        value: POST
+                    token_bucket:
+                      max_tokens: 2
+                      tokens_per_fill: 2
+                      fill_interval: 60s
+                  - entries:
+                      - key: user
+                        value: test
+                    token_bucket:
+                      max_tokens: 2
+                      tokens_per_fill: 2
+                      fill_interval: 60s
                 response_headers_to_add:
                   - append: false
                     header:
                       key: x-local-rate-limit
                       value: 'true'
-EOF
