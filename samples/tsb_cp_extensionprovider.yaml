@@ -1,0 +1,32 @@
+    xcp:
+      centralAuthMode: JWT
+      centralProvidedCaCert: true
+      configProtection: {}
+      isolationBoundaries:
+      - name: global
+        revisions:
+        - istio:
+            tsbVersion: 1.10.2
+            kubeSpec:
+              overlays:
+                - apiVersion: install.istio.io/v1alpha1
+                  kind: IstioOperator
+                  name: xcp-iop-default
+                  patches:
+                  - path: spec.meshConfig.extensionProviders
+                    value:
+                      - envoyFileAccessLog:
+                          logFormat:
+                            text: "[%START_TIME%] %HOSTNAME% \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
+                              %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %REQ(USER-AGENT)% %DOWNSTREAM_REMOTE_ADDRESS%
+                              %CLUSTER_METADATA(istio:services)% %UPSTREAM_HOST% \n"
+                        name: envoy-log-format
+                      - envoyHttpAls:
+                          port: 11800
+                          service: oap.istio-system.svc.cluster.local
+                        name: tsb-http-als
+                      - envoyTcpAls:
+                          port: 11800
+                          service: oap.istio-system.svc.cluster.local
+                        name: tsb-tcp-als
+          name: default
