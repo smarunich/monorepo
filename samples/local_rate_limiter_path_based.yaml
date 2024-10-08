@@ -1,0 +1,131 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: edge-ratelimit
+  namespace: edge
+  annotations:
+    tsb.tetrate.io/organization: tfc
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: edge-ws
+    tsb.tetrate.io/istioInternalGroup: edge-ig
+  labels:
+    istio.io/rev: tsb
+spec:
+  workloadSelector:
+    labels:
+      app: edge-gw
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            value:
+              stat_prefix: http_local_rate_limiter
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            name: "apibin.tfc.dogfood.sandbox.tetrate.io:8080"
+      patch:
+        operation: MERGE
+        value:
+          rate_limits:
+            - actions:
+              - header_value_match:
+                  descriptor_key: path
+                  descriptor_value: test
+                  headers:
+                    - name: :path
+                      string_match:
+                        prefix: /test
+                        ignore_case: true
+            - actions:
+              - header_value_match:
+                  descriptor_key: path
+                  descriptor_value: orders
+                  headers:
+                    - name: :path
+                      string_match:
+                        prefix: /orders
+                        ignore_case: true
+            - actions:
+              - header_value_match:
+                  descriptor_key: path
+                  descriptor_value: history
+                  headers:
+                    - name: ":path"
+                      safe_regex_match:
+                        google_re2: {}
+                        regex: "^/history/.*"
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            name: "apibin.tfc.dogfood.sandbox.tetrate.io:8080"
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            envoy.filters.http.local_ratelimit:
+              "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+              type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+              value:
+                stat_prefix: http_local_rate_limiter
+                status:
+                 code: 500
+                token_bucket:
+                  max_tokens: 200
+                  tokens_per_fill: 200
+                  fill_interval: 60s
+                filter_enabled:
+                  runtime_key: local_rate_limit_enabled
+                  default_value:
+                    numerator: 100
+                    denominator: HUNDRED
+                filter_enforced:
+                  runtime_key: local_rate_limit_enforced
+                  default_value:
+                    numerator: 100
+                    denominator: HUNDRED
+                descriptors:
+                  - entries:
+                    - key: path
+                      value: test
+                    token_bucket:
+                      max_tokens: 1
+                      tokens_per_fill: 1
+                      fill_interval: 60s
+                  - entries:
+                    - key: path
+                      value: orders
+                    token_bucket:
+                      max_tokens: 2
+                      tokens_per_fill: 2
+                      fill_interval: 60s
+                  - entries:
+                    - key: path
+                      value: history
+                    token_bucket:
+                      max_tokens: 3
+                      tokens_per_fill: 3
+                      fill_interval: 60s
+                response_headers_to_add:
+                  - append: false
+                    header:
+                      key: x-local-rate-limit
+                      value: 'true'
