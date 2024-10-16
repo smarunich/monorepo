@@ -1,3 +1,27 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  labels:
+    istio.io/rev: default
+  name: api-subsets
+  namespace: bookinfo
+spec:
+  exportTo:
+  - .
+  host: apibin.tfc.dogfood.sandbox.tetrate.io
+  subsets:
+  - labels:
+      version: active
+    name: subset-0
+  - labels:
+      version: passive
+    name: subset-1
+  workloadSelector:
+    matchLabels:
+      app: productpage
+      version: v2
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
