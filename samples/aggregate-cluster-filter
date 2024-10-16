@@ -1,0 +1,52 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  labels:
+    istio.io/rev: default
+  name: aggregate-cluster-filter
+  namespace: bookinfo
+spec:
+  configPatches:
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+        cluster_type:
+          name: envoy.clusters.aggregate
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.clusters.aggregate.v3.ClusterConfig
+            clusters:
+            - outbound|80|subset-0|apibin.tfc.dogfood.sandbox.tetrate.io
+            - outbound|80|subset-1|apibin.tfc.dogfood.sandbox.tetrate.io
+        lb_policy: CLUSTER_PROVIDED
+        name: agg_outbound|80|subset-0|apibin.tfc.dogfood.sandbox.tetrate.io
+        typed_extension_protocol_options:
+          envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+            '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+            use_downstream_protocol_config:
+              http_protocol_options: {}
+              http2_protocol_options: {}
+  - applyTo: HTTP_ROUTE
+    match:
+      routeConfiguration:
+        vhost:
+          name: apibin.tfc.dogfood.sandbox.tetrate.io:80
+    patch:
+      operation: MERGE
+      value:
+        route:
+          cluster: agg_outbound|80|subset-0|apibin.tfc.dogfood.sandbox.tetrate.io
+  - applyTo: CLUSTER
+    patch:
+      operation: MERGE
+      value:
+        outlier_detection:
+          base_ejection_time: 30s
+          consecutive_5xx: 5
+          enforcing_consecutive_5xx: 100
+          interval: 10s
+          max_ejection_percent: 100
+  workloadSelector:
+    labels:
+      app: productpage
+      version: v2
