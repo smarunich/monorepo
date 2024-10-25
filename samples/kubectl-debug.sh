@@ -1,3 +1,4 @@
+# https://kubernetes.io/blog/2024/08/22/kubernetes-1-31-custom-profiling-kubectl-debug/
 POD=`kubectl get pod -l app=edge -n istio-system | grep -v NAME | cut -d' ' -f1`
 CONTAINER=`kubectl get pod $POD -n istio-system -o json | jq -r .spec.containers[].name`
 
