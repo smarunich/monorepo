@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Set default variables, can be overridden by passing environment variables
-SERVICE_ACCOUNT_NAME="example-sa"    # Service account name
-NAMESPACE="default"                  # Kubernetes namespace
-KUBECONFIG_FILE="sa-kubeconfig.yaml" # Kubeconfig output file
+SERVICE_ACCOUNT_NAME="admin-account"   # Service account name
+NAMESPACE="default"                    # Kubernetes namespace
 SA_CONTEXT="${SA_CONTEXT:-sa-context}" # Context name
 CLUSTER_NAME="${CLUSTER_NAME:-kubernetes}" # Cluster name
+KUBECONFIG_FILE="${SA_CONTEXT}-kubeconfig.yaml" # Kubeconfig output file based on context name
 
 # Create the service account
 kubectl create serviceaccount $SERVICE_ACCOUNT_NAME -n $NAMESPACE
