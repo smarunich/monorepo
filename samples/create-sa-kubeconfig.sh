@@ -27,22 +27,33 @@ TOKEN=$(kubectl get secret $SECRET_NAME -n $NAMESPACE -o jsonpath='{.data.token}
 # Retrieve the Kubernetes API server URL
 SERVER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
-# Generate the kubeconfig file and add the token as part of the profile
-kubectl config --kubeconfig=$KUBECONFIG_FILE set-cluster $CLUSTER_NAME \
-  --server=$SERVER_URL \
-  --insecure-skip-tls-verify=true
+# Generate the kubeconfig file and embed the token directly in the configuration
+cat <<EOF > $KUBECONFIG_FILE
+apiVersion: v1
+kind: Config
+clusters:
+- name: $CLUSTER_NAME
+  cluster:
+    server: $SERVER_URL
+    insecure-skip-tls-verify: true
+contexts:
+- name: $SA_CONTEXT
+  context:
+    cluster: $CLUSTER_NAME
+    user: $SERVICE_ACCOUNT_NAME
+    namespace: $NAMESPACE
+current-context: $SA_CONTEXT
+users:
+- name: $SERVICE_ACCOUNT_NAME
+  user:
+    token: $TOKEN
+EOF
 
-kubectl config --kubeconfig=$KUBECONFIG_FILE set-credentials $SERVICE_ACCOUNT_NAME \
-  --token=$TOKEN
-
-kubectl config --kubeconfig=$KUBECONFIG_FILE set-context $SA_CONTEXT \
-  --cluster=$CLUSTER_NAME \
-  --user=$SERVICE_ACCOUNT_NAME \
-  --namespace=$NAMESPACE
-
-kubectl config --kubeconfig=$KUBECONFIG_FILE use-context $SA_CONTEXT
+# Export KUBECONFIG environment variable for the generated profile
+export KUBECONFIG=$(realpath $KUBECONFIG_FILE)
+echo "KUBECONFIG exported to: $KUBECONFIG"
 
 # Print completion message
 echo "Service account '$SERVICE_ACCOUNT_NAME' created with admin permissions in namespace '$NAMESPACE'."
-echo "Kubeconfig file generated: $KUBECONFIG_FILE"
+echo "Kubeconfig file generated: $KUBECONFIG_FILE (including token for sharing)"
 echo "Context name: $SA_CONTEXT, Cluster name: $CLUSTER_NAME"
