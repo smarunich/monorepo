@@ -27,7 +27,7 @@ TOKEN=$(kubectl get secret $SECRET_NAME -n $NAMESPACE -o jsonpath='{.data.token}
 # Retrieve the Kubernetes API server URL
 SERVER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
-# Generate the kubeconfig file
+# Generate the kubeconfig file and add the token as part of the profile
 kubectl config --kubeconfig=$KUBECONFIG_FILE set-cluster $CLUSTER_NAME \
   --server=$SERVER_URL \
   --insecure-skip-tls-verify=true
