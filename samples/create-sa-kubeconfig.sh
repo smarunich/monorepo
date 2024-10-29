@@ -1,59 +1,126 @@
 #!/bin/bash
 
-# Set default variables, can be overridden by passing environment variables
-SERVICE_ACCOUNT_NAME="admin-account"   # Service account name
-NAMESPACE="default"                    # Kubernetes namespace
-SA_CONTEXT="${SA_CONTEXT:-sa-context}" # Context name
-CLUSTER_NAME="${CLUSTER_NAME:-kubernetes}" # Cluster name
-KUBECONFIG_FILE="${SA_CONTEXT}-kubeconfig.yaml" # Kubeconfig output file based on context name
+# File paths for YAML manifests and kubeconfig
+SA_YAML="static-admin-sa.yaml"
+SECRET_YAML="static-admin-secret.yaml"
+BINDING_YAML="static-admin-binding.yaml"
+KUBECONFIG_FILE="admin-kubeconfig.yaml"
 
-# Create the service account
-kubectl create serviceaccount $SERVICE_ACCOUNT_NAME -n $NAMESPACE
+# Kubernetes namespace, ServiceAccount, and ClusterRoleBinding names
+NAMESPACE="kube-system"
+SERVICE_ACCOUNT_NAME="static-admin"
+SECRET_NAME="${SERVICE_ACCOUNT_NAME}-token"
+CLUSTER_ROLE="cluster-admin"
+ROLE_BINDING_NAME="${SERVICE_ACCOUNT_NAME}-binding"
 
-# Grant admin role to the service account
-kubectl create clusterrolebinding ${SERVICE_ACCOUNT_NAME}-admin-binding \
-  --clusterrole=admin \
-  --serviceaccount=$NAMESPACE:$SERVICE_ACCOUNT_NAME
+# Create YAML manifests for the resources
+function create_yaml_files() {
+    # ServiceAccount YAML
+    cat <<EOF > ${SA_YAML}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${SERVICE_ACCOUNT_NAME}
+  namespace: ${NAMESPACE}
+EOF
 
-# Retrieve the service account's token name
-SECRET_NAME=$(kubectl get sa $SERVICE_ACCOUNT_NAME -n $NAMESPACE -o jsonpath='{.secrets[0].name}')
+    # Secret YAML with annotation for the Service Account token
+    cat <<EOF > ${SECRET_YAML}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${SECRET_NAME}
+  namespace: ${NAMESPACE}
+  annotations:
+    kubernetes.io/service-account.name: ${SERVICE_ACCOUNT_NAME}
+type: kubernetes.io/service-account-token
+EOF
 
-# Patch the secret to extend token lifetime (disables expiration)
-kubectl patch secret $SECRET_NAME -n $NAMESPACE -p '{"metadata": {"annotations": {"kubernetes.io/service-account-token": "true"}}}'
+    # ClusterRoleBinding YAML
+    cat <<EOF > ${BINDING_YAML}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${ROLE_BINDING_NAME}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ${CLUSTER_ROLE}
+subjects:
+- kind: ServiceAccount
+  name: ${SERVICE_ACCOUNT_NAME}
+  namespace: ${NAMESPACE}
+EOF
+}
 
-# Extract the token value
-TOKEN=$(kubectl get secret $SECRET_NAME -n $NAMESPACE -o jsonpath='{.data.token}' | base64 --decode)
+# Apply the YAML manifests to create resources
+function apply_manifests() {
+    echo "Creating resources..."
+    kubectl apply -f ${SA_YAML}
+    kubectl apply -f ${SECRET_YAML}
+    kubectl apply -f ${BINDING_YAML}
+    echo "Resources created successfully."
 
-# Retrieve the Kubernetes API server URL
-SERVER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+    # Wait a few seconds to ensure the token is generated
+    sleep 5
 
-# Generate the kubeconfig file and embed the token directly in the configuration
-cat <<EOF > $KUBECONFIG_FILE
+    # Generate kubeconfig file
+    generate_kubeconfig
+}
+
+# Generate kubeconfig file for the ServiceAccount
+function generate_kubeconfig() {
+    echo "Generating kubeconfig for ${SERVICE_ACCOUNT_NAME}..."
+
+    # Retrieve the API server URL, cluster name, and CA certificate
+    SERVER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+    CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
+    CA_CERT=$(kubectl get secret/${SECRET_NAME} -n ${NAMESPACE} -o jsonpath='{.data.ca\.crt}')
+    TOKEN=$(kubectl get secret/${SECRET_NAME} -n ${NAMESPACE} -o jsonpath='{.data.token}' | base64 --decode)
+
+    # Generate the kubeconfig file
+    cat <<EOF > ${KUBECONFIG_FILE}
 apiVersion: v1
 kind: Config
 clusters:
-- name: $CLUSTER_NAME
-  cluster:
-    server: $SERVER_URL
-    insecure-skip-tls-verify: true
+- cluster:
+    certificate-authority-data: ${CA_CERT}
+    server: ${SERVER_URL}
+  name: ${CLUSTER_NAME}
 contexts:
-- name: $SA_CONTEXT
-  context:
-    cluster: $CLUSTER_NAME
-    user: $SERVICE_ACCOUNT_NAME
-    namespace: $NAMESPACE
-current-context: $SA_CONTEXT
+- context:
+    cluster: ${CLUSTER_NAME}
+    user: ${SERVICE_ACCOUNT_NAME}
+  name: ${SERVICE_ACCOUNT_NAME}-context
+current-context: ${SERVICE_ACCOUNT_NAME}-context
 users:
-- name: $SERVICE_ACCOUNT_NAME
+- name: ${SERVICE_ACCOUNT_NAME}
   user:
-    token: $TOKEN
+    token: ${TOKEN}
 EOF
 
-# Export KUBECONFIG environment variable for the generated profile
-export KUBECONFIG=$(realpath $KUBECONFIG_FILE)
-echo "KUBECONFIG exported to: $KUBECONFIG"
+    echo "Kubeconfig generated at ${KUBECONFIG_FILE}"
+}
 
-# Print completion message
-echo "Service account '$SERVICE_ACCOUNT_NAME' created with admin permissions in namespace '$NAMESPACE'."
-echo "Kubeconfig file generated: $KUBECONFIG_FILE (including token for sharing)"
-echo "Context name: $SA_CONTEXT, Cluster name: $CLUSTER_NAME"
+# Delete the resources using YAML manifests
+function delete_manifests() {
+    echo "Deleting resources..."
+    kubectl delete -f ${BINDING_YAML}
+    kubectl delete -f ${SECRET_YAML}
+    kubectl delete -f ${SA_YAML}
+
+    # Clean up YAML files and kubeconfig
+    rm -f ${SA_YAML} ${SECRET_YAML} ${BINDING_YAML} ${KUBECONFIG_FILE}
+    echo "Resources and files deleted successfully."
+}
+
+# Main logic to create or delete resources
+if [[ "$1" == "create" ]]; then
+    create_yaml_files
+    apply_manifests
+elif [[ "$1" == "delete" ]]; then
+    delete_manifests
+else
+    echo "Usage: $0 {create|delete}"
+    exit 1
+fi
