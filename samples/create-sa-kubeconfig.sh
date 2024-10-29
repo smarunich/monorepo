@@ -79,7 +79,7 @@ function generate_kubeconfig() {
     TOKEN=$(kubectl get secret/${SECRET_NAME} -n ${NAMESPACE} -o jsonpath='{.data.token}' | base64 --decode)
 
     # Generate the kubeconfig file
-    cat <<EOF > ${KUBECONFIG_FILE}
+    cat <<EOF > ${CLUSTER_NAME}-${KUBECONFIG_FILE}
 apiVersion: v1
 kind: Config
 clusters:
@@ -99,7 +99,7 @@ users:
     token: ${TOKEN}
 EOF
 
-    echo "Kubeconfig generated at ${KUBECONFIG_FILE}"
+    echo "Kubeconfig generated at ${CLUSTER_NAME}-${KUBECONFIG_FILE}"
 }
 
 # Delete the resources using YAML manifests
