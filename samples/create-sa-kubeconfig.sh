@@ -91,8 +91,8 @@ contexts:
 - context:
     cluster: ${CLUSTER_NAME}
     user: ${SERVICE_ACCOUNT_NAME}
-  name: ${SERVICE_ACCOUNT_NAME}-context
-current-context: ${SERVICE_ACCOUNT_NAME}-context
+  name: ${CLUSTER_NAME}
+current-context: ${CLUSTER_NAME}
 users:
 - name: ${SERVICE_ACCOUNT_NAME}
   user:
