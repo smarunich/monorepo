@@ -1,0 +1,50 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.istio.io/v1alpha3","kind":"EnvoyFilter","metadata":{"annotations":{},"name":"rewrite-no-healthy-upstream","namespace":"bookinfo"},"spec":{"configPatches":[{"applyTo":"HTTP_FILTER","match":{"context":"SIDECAR_OUTBOUND","listener":{"filterChain":{"filter":{"name":"envoy.filters.network.http_connection_manager"}},"portNumber":80}},"patch":{"operation":"INSERT_BEFORE","value":{"name":"envoy.filters.http.lua","typed_config":{"@type":"type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua","inlineCode":"function envoy_on_response(response_handle)\n  -- Check if the status code is 503\n  if response_handle:headers():get(\":status\") == \"503\" then\n    -- Modify the status code to 200\n    response_handle:headers():replace(\":status\", \"200\")\n    local custom_body = [[\n      \u003chtml\u003e\n        \u003chead\u003e\u003ctitle\u003eService Unavailable\u003c/title\u003e\u003c/head\u003e\n        \u003cbody\u003e\n          \u003ch1\u003eService Currently Unavailable\u003c/h1\u003e\n          \u003cp\u003eOur system is currently experiencing issues. Please be patient while we resolve them, or try manual rerouting if needed.\u003c/p\u003e\n        \u003c/body\u003e\n      \u003c/html\u003e\n    ]]\n    response_handle:headers():replace(\"content-type\", \"text/html\")\n    response_handle:body():setBytes(custom_body)\n  end\nend\n"}}}}],"workloadSelector":{"labels":{"run":"http-client"}}}}
+  creationTimestamp: "2024-10-21T19:29:22Z"
+  generation: 1
+  name: rewrite-no-healthy-upstream
+  namespace: bookinfo
+  resourceVersion: "49163504"
+  uid: f84fb697-8d51-4531-b639-b775c69d0f83
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+        portNumber: 80
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inlineCode: |
+            function envoy_on_response(response_handle)
+              -- Check if the status code is 503
+              if response_handle:headers():get(":status") == "503" then
+                -- Modify the status code to 200
+                response_handle:headers():replace(":status", "200")
+                local custom_body = [[
+                  <html>
+                    <head><title>Service Unavailable</title></head>
+                    <body>
+                      <h1>Service Currently Unavailable</h1>
+                      <p>Our system is currently experiencing issues. Please be patient while we resolve them, or try manual rerouting if needed.</p>
+                    </body>
+                  </html>
+                ]]
+                response_handle:headers():replace("content-type", "text/html")
+                response_handle:body():setBytes(custom_body)
+              end
+            end
+  workloadSelector:
+    labels:
+      run: http-client
