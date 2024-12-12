@@ -1,0 +1,35 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Gateway
+metadata:
+  name: httpbin-shared-app-gw
+  namespace: httpbin
+  annotations:
+    tsb.tetrate.io/organization: tfc
+    tsb.tetrate.io/tenant: prod-shared-services
+    tsb.tetrate.io/workspace: shared-app-gw-ws
+    tsb.tetrate.io/gatewayGroup: shared-services-gg-us-east-1
+spec:
+  workloadSelector:
+    namespace: shared-services
+    labels:
+      app: shared-app-gw
+  http:
+    - name: health
+      port: 80
+      hostname: 'health.gateway'
+      routing:
+        rules:
+          - directResponse:
+              status: 200
+              body:
+                string: "OK"
+    - name: productpage
+      port: 80
+      hostname: "httpbin.shared.tetrate.io"
+      routing:
+        rules:
+          - route:
+              serviceDestination:
+                host: "httpbin/httpbin.httpbin.svc.cluster.local"
+                port: 8000
