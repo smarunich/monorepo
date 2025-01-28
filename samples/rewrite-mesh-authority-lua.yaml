@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rewrite-mesh-authority-lua
+  namespace: istio-system
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inline_code: |
+            function envoy_on_request(request_handle)
+              local authority = request_handle:headers():get(":authority")
+              request_handle:logInfo("Original Authority: "..tostring(authority))
+              
+              if authority == nil then
+                request_handle:logErr("Authority header is nil")
+                return
+              end
+              
+              local new_auth, replacements = authority:gsub("%.mesh", ".svc.cluster.local")
+              request_handle:logInfo("Replacements made: "..tostring(replacements))
+              request_handle:logInfo("New Authority: "..new_auth)
+              
+              if replacements > 0 then
+                request_handle:headers():replace(":authority", new_auth)   
+                request_handle:logInfo("Authority header replaced successfully")
+              else
+                request_handle:logInfo("No .mesh pattern found in authority: "..authority)
+              end
+            end
