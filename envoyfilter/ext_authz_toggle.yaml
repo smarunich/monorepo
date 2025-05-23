@@ -1,0 +1,77 @@
+# https://github.com/envoyproxy/envoy/issues/5769#issuecomment-854812050
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: app-bookinfo-oidcbypass-shadowrule
+  namespace: bookinfo
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+          sni: bookinfo-oidc.sandbox.tetrate.io
+        portNumber: 8443
+      proxy:
+        proxyVersion: ^1\.(20|21|22|24)(\.\d+)?(-.*)?$
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter
+        name: envoy.filters.http.rbac
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+          shadow_rules:
+            action: DENY
+            policies:
+              istio-ext-auth-oidc-bypass:
+                permissions:
+                - and_rules:
+                    rules:
+                    - any: true
+                principals:
+                - and_ids:
+                    ids:
+                    - not_id:
+                        or_ids:
+                          ids:
+                          - header:
+                              name: x-skip-auth
+                              present_match: true
+          shadow_rules_stat_prefix: istio_ext_authz_oidc_bypass_
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.ext_authz
+          sni: bookinfo-oidc.sandbox.tetrate.io
+        portNumber: 8443
+      proxy:
+        proxyVersion: ^1\.(20|21|22|24)(\.\d+)?(-.*)?$
+    patch:
+      operation: MERGE
+      value:
+        '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter
+        name: envoy.filters.http.ext_authz
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+          filter_enabled_metadata:
+            filter: envoy.filters.http.rbac
+            path:
+            - key: istio_ext_authz_oidc_bypass_shadow_effective_policy_id
+            value:
+              string_match:
+                prefix: istio-ext-auth-oidc-bypass
+  priority: -20001
+  workloadSelector:
+    labels:
+      app: app-gw
