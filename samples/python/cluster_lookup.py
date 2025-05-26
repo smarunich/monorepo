@@ -4,8 +4,8 @@ import sys
 from collections import defaultdict
 
 # Config
-HOSTNAME = os.getenv("HOSTNAME", "test.sandbox.tetrate.io")
-ORG = os.getenv("ORG", "test")
+HOSTNAME = os.getenv("HOSTNAME", "tsb.tfc.dogfood.sandbox.tetrate.io")
+ORG = os.getenv("ORG", "tfc")
 TSB_TOKEN = os.getenv("TSB_TOKEN")
 
 if not TSB_TOKEN:
@@ -22,8 +22,11 @@ response = requests.get(url, headers=headers, verify=False)
 response.raise_for_status()
 data = response.json()
 
-# Process data
+# Count per (cluster, state)
 counts = defaultdict(int)
+
+# Count per state (summary)
+state_totals = defaultdict(int)
 
 for cluster in data.get("clusters", []):
     cluster_name = cluster.get("fqn", "")
@@ -34,15 +37,22 @@ for cluster in data.get("clusters", []):
             state = svc.get("state")
             if state:
                 counts[(cluster_name, state)] += 1
+                state_totals[state] += 1
+
+# Prepare rows
+rows = [(cluster, state, count) for (cluster, state), count in sorted(counts.items())]
 
 # Determine column widths
-rows = [(cluster, state, count) for (cluster, state), count in sorted(counts.items())]
 max_cluster_len = max((len(cluster) for cluster, _, _ in rows), default=7)
 max_state_len = max((len(state) for _, state, _ in rows), default=5)
 
-# Header
+# Print per-cluster counts
 print(f"{'Cluster'.ljust(max_cluster_len)}  {'State'.ljust(max_state_len)}  Count")
-
-# Rows
 for cluster, state, count in rows:
     print(f"{cluster.ljust(max_cluster_len)}  {state.ljust(max_state_len)}  {count}")
+
+# Print totals
+print("\nSummary:")
+print(f"{'State'.ljust(max_state_len)}  Count")
+for state, total in sorted(state_totals.items()):
+    print(f"{state.ljust(max_state_len)}  {total}")
