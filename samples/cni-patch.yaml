@@ -1,0 +1,24 @@
+spec:
+  components:
+    istio:
+      kubeSpec:
+        overlays:
+          - apiVersion: install.istio.io/v1alpha1
+            kind: IstioOperator
+            name: xcp-iop-global-cni
+            patches:
+              - path: spec.values.cni.affinity
+                value:
+                  nodeAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                      nodeSelectorTerms:
+                        - matchExpressions:
+                            - key: topology.kubernetes.io/zone
+                              operator: In
+                              values:
+                                - eastus-3
+        CNI:
+          chained: true
+          binaryDirectory: /opt/cni/bin
+          configurationDirectory: /etc/cni/net.d
+      traceSamplingRate: 100
