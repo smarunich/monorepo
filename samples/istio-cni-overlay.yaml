@@ -1,0 +1,12 @@
+spec:
+  components:
+    istio:
+      kubeSpec:
+        overlays:
+        - apiVersion: install.istio.io/v1alpha1
+          kind: IstioOperator
+          name: xcp-iop-global-cni
+          patches:
+          - path: metadata.labels
+            value:
+              platform.tetrate.io/plane: tsb-cni
