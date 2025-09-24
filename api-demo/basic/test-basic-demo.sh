@@ -221,9 +221,9 @@ echo "- Host Header used: ${HOST_HEADER}"
 echo "- Output directory: ${OUTPUT_DIR}"
 
 # Optional: Clean up
-read -p "Do you want to clean up the output directory? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    rm -rf "${OUTPUT_DIR}"
-    echo "Output directory cleaned up."
-fi
+# read -p "Do you want to clean up the output directory? (y/n) " -n 1 -r
+# echo
+#if [[ $REPLY =~ ^[Yy]$ ]]; then
+rm -rf "${OUTPUT_DIR}"
+#    echo "Output directory cleaned up."
+#fi
