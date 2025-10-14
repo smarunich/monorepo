@@ -7,7 +7,6 @@
 # PROTOCOL SUPPORT: HTTP and HTTPS protocols are supported.
 # TCP and TLS protocols are currently disabled.
 
-set -e
 
 # Colors for output
 RED='\033[0;31m'
@@ -32,8 +31,8 @@ NAMESPACES=("${BASE_NAMESPACE}-prod" "${BASE_NAMESPACE}-staging" "${BASE_NAMESPA
 # Business service layer names (using financial/enterprise terminology)
 BUSINESS_SERVICES=("market-data-gateway" "trading-engine-proxy" "compliance-validator" "settlement-processor")
 
-# Core backend services for ultimate destinations (financial service names)
-BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
+# Core backend services for ultimate destinations
+BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
 BACKEND_IMAGES=("docker.io/kennethreitz/httpbin:latest" "docker.io/mccutchen/go-httpbin:v2.15.0" "nginx:alpine" "k8s.gcr.io/echoserver:1.10")
 
 # Giraffe image for business service layers
@@ -310,16 +309,16 @@ get_upstream_services_for_business_service() {
     case $business_service in
         market-data-gateway)
             # Call local backend + cross-namespace services
-            echo "http://$backend_service:$backend_port,http://order-execution-service.${BASE_NAMESPACE}-staging:8080,http://compliance-records.${BASE_NAMESPACE}-dev:80"
+            echo "http://$backend_service:$backend_port,http://httpbingo.${BASE_NAMESPACE}-staging:8080,http://nginx.${BASE_NAMESPACE}-dev:80"
             ;;
         trading-engine-proxy)
-            echo "http://$backend_service:$backend_port,http://market-data-feed.${BASE_NAMESPACE}-prod:80,http://settlement-ledger.${BASE_NAMESPACE}-test:8080"
+            echo "http://$backend_service:$backend_port,http://httpbin.${BASE_NAMESPACE}-prod:80,http://echoserver.${BASE_NAMESPACE}-test:8080"
             ;;
         compliance-validator)
-            echo "http://$backend_service:$backend_port,http://market-data-feed.${BASE_NAMESPACE}-prod:80,http://order-execution-service.${BASE_NAMESPACE}-staging:8080"
+            echo "http://$backend_service:$backend_port,http://httpbin.${BASE_NAMESPACE}-prod:80,http://httpbingo.${BASE_NAMESPACE}-staging:8080"
             ;;
         settlement-processor)
-            echo "http://$backend_service:$backend_port,http://compliance-records.${BASE_NAMESPACE}-dev:80,http://market-data-feed.${BASE_NAMESPACE}-prod:80"
+            echo "http://$backend_service:$backend_port,http://nginx.${BASE_NAMESPACE}-dev:80,http://httpbin.${BASE_NAMESPACE}-prod:80"
             ;;
         *)
             echo "http://$backend_service:$backend_port"  # fallback
@@ -522,33 +521,33 @@ deploy_backend() {
     log_info "Deploying core backend $backend in namespace $namespace"
 
     case $backend in
-        market-data-feed)
+        httpbin)
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: market-data-feed
+  name: httpbin
   labels:
-    app: market-data-feed
+    app: httpbin
     version: v1
     tier: core-backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: market-data-feed
+      app: httpbin
       version: v1
   template:
     metadata:
       labels:
-        app: market-data-feed
+        app: httpbin
         version: v1
-        backend: market-data-feed
+        backend: httpbin
         tier: core-backend
     spec:
       containers:
       - image: $image
-        name: market-data-feed
+        name: httpbin
         ports:
         - containerPort: 80
         resources:
@@ -562,46 +561,46 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: market-data-feed
+  name: httpbin
   labels:
-    app: market-data-feed
+    app: httpbin
     tier: core-backend
 spec:
   selector:
-    app: market-data-feed
+    app: httpbin
   ports:
   - port: 80
     targetPort: 80
     name: http
 EOF
             ;;
-        order-execution-service)
+        httpbingo)
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order-execution-service
+  name: httpbingo
   labels:
-    app: order-execution-service
+    app: httpbingo
     version: v1
     tier: core-backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: order-execution-service
+      app: httpbingo
       version: v1
   template:
     metadata:
       labels:
-        app: order-execution-service
+        app: httpbingo
         version: v1
-        backend: order-execution-service
+        backend: httpbingo
         tier: core-backend
     spec:
       containers:
       - image: $image
-        name: order-execution-service
+        name: httpbingo
         ports:
         - containerPort: 8080
         env:
@@ -618,32 +617,32 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: order-execution-service
+  name: httpbingo
   labels:
-    app: order-execution-service
+    app: httpbingo
     tier: core-backend
 spec:
   selector:
-    app: order-execution-service
+    app: httpbingo
   ports:
   - port: 8080
     targetPort: 8080
     name: http
 EOF
             ;;
-        compliance-records)
+        nginx)
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: compliance-records-config
+  name: nginx-config
 data:
   default.conf: |
     server {
         listen 80;
         server_name localhost;
         location / {
-            return 200 '{"service": "compliance-records", "namespace": "$namespace", "path": "\$uri", "method": "\$request_method", "headers": \$http_host, "backend_tier": "core"}';
+            return 200 '{"service": "nginx", "namespace": "$namespace", "path": "\$uri", "method": "\$request_method", "headers": \$http_host, "backend_tier": "core"}';
             add_header Content-Type application/json;
         }
         location /health {
@@ -655,32 +654,32 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: compliance-records
+  name: nginx
   labels:
-    app: compliance-records
+    app: nginx
     version: v1
     tier: core-backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: compliance-records
+      app: nginx
       version: v1
   template:
     metadata:
       labels:
-        app: compliance-records
+        app: nginx
         version: v1
-        backend: compliance-records
+        backend: nginx
         tier: core-backend
     spec:
       containers:
       - image: $image
-        name: compliance-records
+        name: nginx
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: compliance-records-config
+        - name: nginx-config
           mountPath: /etc/nginx/conf.d
         resources:
           requests:
@@ -690,53 +689,53 @@ spec:
             memory: "64Mi"
             cpu: "50m"
       volumes:
-      - name: compliance-records-config
+      - name: nginx-config
         configMap:
-          name: compliance-records-config
+          name: nginx-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: compliance-records
+  name: nginx
   labels:
-    app: compliance-records
+    app: nginx
     tier: core-backend
 spec:
   selector:
-    app: compliance-records
+    app: nginx
   ports:
   - port: 80
     targetPort: 80
     name: http
 EOF
             ;;
-        settlement-ledger)
+        echo)
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: settlement-ledger
+  name: echoserver
   labels:
-    app: settlement-ledger
+    app: echoserver
     version: v1
     tier: core-backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: settlement-ledger
+      app: echoserver
       version: v1
   template:
     metadata:
       labels:
-        app: settlement-ledger
+        app: echoserver
         version: v1
-        backend: settlement-ledger
+        backend: echo
         tier: core-backend
     spec:
       containers:
       - image: $image
-        name: settlement-ledger
+        name: echoserver
         ports:
         - containerPort: 8080
         resources:
@@ -750,13 +749,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: settlement-ledger
+  name: echoserver
   labels:
-    app: settlement-ledger
+    app: echoserver
     tier: core-backend
 spec:
   selector:
-    app: settlement-ledger
+    app: echoserver
   ports:
   - port: 8080
     targetPort: 8080
@@ -804,10 +803,10 @@ setup_environment() {
         # Wait for backend deployment to be ready
         log_info "Waiting for $backend deployment to be ready in $namespace..."
         case $backend in
-            market-data-feed) kubectl wait --for=condition=available --timeout=300s deployment/market-data-feed -n "$namespace" ;;
-            order-execution-service) kubectl wait --for=condition=available --timeout=300s deployment/order-execution-service -n "$namespace" ;;
-            compliance-records) kubectl wait --for=condition=available --timeout=300s deployment/compliance-records -n "$namespace" ;;
-            settlement-ledger) kubectl wait --for=condition=available --timeout=300s deployment/settlement-ledger -n "$namespace" ;;
+            httpbin) kubectl wait --for=condition=available --timeout=300s deployment/httpbin -n "$namespace" ;;
+            httpbingo) kubectl wait --for=condition=available --timeout=300s deployment/httpbingo -n "$namespace" ;;
+            nginx) kubectl wait --for=condition=available --timeout=300s deployment/nginx -n "$namespace" ;;
+            echo) kubectl wait --for=condition=available --timeout=300s deployment/echoserver -n "$namespace" ;;
         esac
 
         # Note: Business service layer will be deployed after gateway services are created
@@ -882,7 +881,7 @@ get_backend_for_namespace() {
             return
         fi
     done
-    echo "market-data-feed"  # fallback
+    echo "httpbin"  # fallback
 }
 
 # Get target port for namespace based on backend
@@ -891,10 +890,10 @@ get_target_port_for_namespace() {
     local backend=$(get_backend_for_namespace "$namespace")
 
     case $backend in
-        market-data-feed) echo "80" ;;
-        order-execution-service) echo "8080" ;;
-        compliance-records) echo "80" ;;
-        settlement-ledger) echo "8080" ;;
+        httpbin) echo "80" ;;
+        httpbingo) echo "8080" ;;
+        nginx) echo "80" ;;
+        echo) echo "8080" ;;
         *) echo "80" ;;
     esac
 }
@@ -905,11 +904,11 @@ get_app_selector_for_namespace() {
     local backend=$(get_backend_for_namespace "$namespace")
 
     case $backend in
-        market-data-feed) echo "market-data-feed" ;;
-        order-execution-service) echo "order-execution-service" ;;
-        compliance-records) echo "compliance-records" ;;
-        settlement-ledger) echo "settlement-ledger" ;;
-        *) echo "market-data-feed" ;;
+        httpbin) echo "httpbin" ;;
+        httpbingo) echo "httpbingo" ;;
+        nginx) echo "nginx" ;;
+        echo) echo "echoserver" ;;
+        *) echo "httpbin" ;;
     esac
 }
 
@@ -1596,75 +1595,3 @@ get_next_env() {
 }
 
 # Main execution
-main() {
-    log_header "TSB Enterprise Gateway Multi-Tier Architecture Demo"
-    log_info "Base Namespace: $BASE_NAMESPACE"
-    log_info "Namespaces: ${NAMESPACES[*]}"
-    log_info "Domain: $DOMAIN"
-    log_info "Cloud Provider: $CLOUD_PROVIDER"
-    log_info "Business Services: ${BUSINESS_SERVICES[*]}"
-    log_info "Core Backends: ${BACKEND_NAMES[*]}"
-    log_info "Architecture: Gateway → Business Service (Giraffe) → Core Backend"
-    log_info "Skip Apply: $SKIP_APPLY"
-
-    if [[ "$BROKEN_SERVICES" == "true" ]]; then
-        log_warning "BROKEN SERVICES MODE ENABLED - High error rates (50-80%) will be injected for failover testing"
-        log_warning "Broken services: market-data-gateway (prod-50%), trading-engine-proxy (staging-70%), compliance-validator (dev-60%), settlement-processor (test-80%)"
-    fi
-
-    # Handle cleanup-only mode
-    if [[ "$CLEANUP_ONLY" == "true" ]]; then
-        cleanup_resources
-        exit 0
-    fi
-
-    # Run demos
-    check_prerequisites
-    if [[ "$SKIP_APPLY" == "false" ]]; then
-        setup_environment
-    else
-        log_info "Skipping environment setup in preview mode"
-    fi
-
-    # Run all demo scenarios
-    demo_basic_http_services
-    demo_https_services
-    demo_api_gateway_routing
-    demo_authentication_services
-    demo_waf_protection
-    demo_cross_environment_services
-    demo_load_balancing
-    demo_multi_protocol
-
-    # Deploy business services after all gateway services are created
-    if [[ "$SKIP_APPLY" == "false" ]]; then
-        deploy_all_business_services
-    fi
-
-    # Show final status
-    if [[ "$SKIP_APPLY" == "false" ]]; then
-        show_status
-        generate_test_commands
-
-        log_header "Enterprise Gateway Multi-Tier Demo Completed Successfully!"
-        log_success "All configurations have been applied across ${#NAMESPACES[@]} namespaces with multi-tier architecture"
-        echo ""
-        log_info "Demo Summary:"
-        echo "  • ${#NAMESPACES[@]} Namespaces: ${NAMESPACES[*]}"
-        echo "  • ${#BUSINESS_SERVICES[@]} Business Services: ${BUSINESS_SERVICES[*]}"
-        echo "  • ${#BACKEND_NAMES[@]} Core Backends: ${BACKEND_NAMES[*]}"
-        echo "  • Multi-Tier Architecture: Gateway → Business Service (Giraffe) → Core Backend"
-        echo "  • 60+ Gateway Configurations"
-        echo "  • Enterprise authentication, WAF, Load Balancing, Cross-environment communication"
-        echo "  • Complete distributed tracing through business service hops"
-        echo ""
-        log_info "To clean up all demo resources, run:"
-        log_info "$0 --cleanup -n $BASE_NAMESPACE"
-    else
-        log_header "Configuration Preview Completed"
-        log_info "All configurations were displayed. Run without --skip-apply to apply them."
-    fi
-}
-
-# Run main function
-main "$@"

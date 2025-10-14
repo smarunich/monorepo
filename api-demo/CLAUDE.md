@@ -10,10 +10,15 @@ This is the **TSB Gateway API Demo Suite** - a comprehensive demonstration and t
 
 ```
 api-demo/
+├── enterprise-gateway-demo.sh    # **NEW** Enterprise multi-tier architecture with financial service names
 ├── advanced-demo.sh              # Main demo deployment script
 ├── test-advanced-demo-gateways.sh # Comprehensive testing script
 ├── run-advanced-tests.sh         # Auto-discovery test runner
 ├── test-advanced-demo.sh         # Legacy single-backend test script
+├── tests/                        # Test framework directory
+│   ├── test-enterprise-gateway-demo.sh  # Comprehensive test suite
+│   ├── TEST_FRAMEWORK_README.md         # Testing documentation
+│   └── TESTING_QUICK_REFERENCE.md       # Quick test reference
 ├── README.md                     # Complete documentation
 └── CLAUDE.md                     # This file
 ```
@@ -112,16 +117,69 @@ annotations:
 ```
 
 ### Backend Mapping
+
+#### Advanced Demo (advanced-demo.sh)
 - **httpbin** → dynabank-prod (port 80)
 - **httpbingo** → dynabank-staging (port 8080)
 - **nginx** → dynabank-dev (port 80)
 - **echo** → dynabank-test (port 8080)
+
+#### Enterprise Gateway Demo (enterprise-gateway-demo.sh) - **UPDATED**
+Financial service-themed backend names that align with business service layers:
+- **market-data-feed** → wealth-prod (port 80) - Provides market quotes and pricing data
+- **order-execution-service** → wealth-staging (port 8080) - Handles trade order execution
+- **compliance-records** → wealth-dev (port 80) - Stores compliance audit logs
+- **settlement-ledger** → wealth-test (port 8080) - Manages settlement transaction records
 
 ### Environment Variables
 - `BASE_NAMESPACE` - Namespace prefix (default: demo)
 - `DOMAIN` - Base domain (default: demo.example.com)
 - `CLOUD_PROVIDER` - Cloud annotations (aws|gcp|azure)
 - `SKIP_APPLY` - Preview mode flag
+- `BROKEN_SERVICES` - **NEW** Inject high error rates for traffic failover testing (enterprise-gateway-demo.sh only)
+
+## Enterprise Gateway Demo (enterprise-gateway-demo.sh)
+
+### Overview
+The enterprise-gateway-demo.sh script creates a **multi-tier architecture** with financial service-themed names:
+- **Business Service Layer**: market-data-gateway, trading-engine-proxy, compliance-validator, settlement-processor
+- **Core Backend Layer**: market-data-feed, order-execution-service, compliance-records, settlement-ledger
+
+### Traffic Flow
+```
+Client → Gateway → Business Service (Giraffe) → Core Backend
+                   ↓                           ↓
+              Processing Layer              Backend Service
+             (Financial Logic)          (market-data-feed, etc.)
+```
+
+### Broken Services Feature
+The `--broken-services` flag enables **traffic failover testing** by injecting high error rates:
+
+```bash
+./enterprise-gateway-demo.sh -n wealth -d api.wealth.com --broken-services
+```
+
+#### Broken Service Configuration
+When enabled, the following services emit high error rates (HTTP 503):
+- **market-data-gateway** in **prod**: 50% error rate
+- **trading-engine-proxy** in **staging**: 70% error rate
+- **compliance-validator** in **dev**: 100% error rate (always fails)
+- **settlement-processor** in **test**: 100% error rate (always fails)
+
+This configuration allows testing of:
+- Circuit breaker patterns
+- Traffic failover scenarios
+- Service mesh resilience
+- Retry policies
+- Fallback strategies
+
+#### Key Functions (enterprise-gateway-demo.sh)
+- `deploy_business_service()` - Deploys Giraffe microservices with configurable ERROR_RATE
+- `deploy_backend()` - Deploys financial-named backend services
+- `get_upstream_services_for_business_service()` - Configures multi-tier service chains
+- `get_business_service_for_namespace()` - Maps namespaces to business services (array rotation)
+- `get_backend_for_namespace()` - Maps namespaces to financial backend names
 
 ## Testing Architecture
 

@@ -1,0 +1,123 @@
+name: TSB Enterprise Gateway Demo Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'api-demo/enterprise-gateway-demo.sh'
+      - 'api-demo/tests/test-enterprise-gateway-demo.sh'
+      - '.github/workflows/test-enterprise-demo.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'api-demo/enterprise-gateway-demo.sh'
+      - 'api-demo/tests/test-enterprise-gateway-demo.sh'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc coreutils
+
+    - name: Verify bc installation
+      run: |
+        which bc
+        echo "0.01 * 2" | bc -l
+
+    - name: Make test script executable
+      run: |
+        cd api-demo
+        chmod +x tests/test-enterprise-gateway-demo.sh enterprise-gateway-demo.sh
+
+    - name: Run Unit Tests
+      run: |
+        cd api-demo
+        ./tests/test-enterprise-gateway-demo.sh --unit
+
+    - name: Run Integration Tests
+      run: |
+        cd api-demo
+        ./tests/test-enterprise-gateway-demo.sh --integration
+
+    - name: Run All Tests with Verbose
+      if: failure()
+      run: |
+        cd api-demo
+        ./tests/test-enterprise-gateway-demo.sh --all -v
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: api-demo/test_output/
+        retention-days: 30
+
+    - name: Generate Test Summary
+      if: always()
+      run: |
+        cd api-demo
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Summary" >> $GITHUB_STEP_SUMMARY
+        if [ -f test_output/summary.txt ]; then
+          cat test_output/summary.txt >> $GITHUB_STEP_SUMMARY
+        fi
+
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run shellcheck on demo script
+      run: |
+        sudo apt-get update && sudo apt-get install -y shellcheck
+        shellcheck -x api-demo/enterprise-gateway-demo.sh || true
+
+    - name: Run shellcheck on test script
+      run: |
+        shellcheck -x api-demo/tests/test-enterprise-gateway-demo.sh || true
+
+  validate-broken-services:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc
+
+    - name: Test Broken Services Flag
+      run: |
+        cd api-demo
+        chmod +x enterprise-gateway-demo.sh
+
+        # Test that broken services flag is present in help
+        ./enterprise-gateway-demo.sh --help | grep -q "broken-services" || exit 1
+
+        # Test that broken services mode generates correct output
+        output=$(./enterprise-gateway-demo.sh -n test -d test.com --broken-services --skip-apply 2>&1)
+
+        # Verify broken services mode is enabled
+        echo "$output" | grep -q "BROKEN SERVICES MODE ENABLED" || exit 1
+
+        # Verify all 4 broken services are mentioned
+        echo "$output" | grep -q "market-data-gateway (prod-50%)" || exit 1
+        echo "$output" | grep -q "trading-engine-proxy (staging-70%)" || exit 1
+        echo "$output" | grep -q "compliance-validator (dev-60%)" || exit 1
+        echo "$output" | grep -q "settlement-processor (test-80%)" || exit 1
+
+        echo "✓ Broken services flag validation passed"

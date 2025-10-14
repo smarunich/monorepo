@@ -1,0 +1,1431 @@
+
+[0;32m================================[0m
+[0;32mTSB Enterprise Gateway Multi-Tier Architecture Demo[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Base Namespace: validation
+[0;34m[INFO][0m Namespaces: validation-prod validation-staging validation-dev validation-test
+[0;34m[INFO][0m Domain: val.com
+[0;34m[INFO][0m Cloud Provider: aws
+[0;34m[INFO][0m Business Services: market-data-gateway trading-engine-proxy compliance-validator settlement-processor
+[0;34m[INFO][0m Core Backends: httpbin httpbingo nginx echo
+[0;34m[INFO][0m Architecture: Gateway → Business Service (Giraffe) → Core Backend
+[0;34m[INFO][0m Skip Apply: true
+
+[0;32m================================[0m
+[0;32mChecking Prerequisites[0m
+[0;32m================================[0m
+[0;32m[SUCCESS][0m Prerequisites check passed
+[0;34m[INFO][0m Skipping environment setup in preview mode
+
+[0;32m================================[0m
+[0;32mDemo 1: Basic HTTP Services Through Business Service Layer[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: Basic HTTP Service - validation-prod (via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-http-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "prod.val.com"
+    gateway.tetrate.io/port: "8001"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    # Enterprise HTTP exposure through business service layer
+    gateway.tetrate.io/service-tier: "business-layer"
+    gateway.tetrate.io/upstream-backend: "httpbin"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Basic HTTP Service - validation-prod (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Basic HTTP Service - validation-staging (via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-http-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "staging.val.com"
+    gateway.tetrate.io/port: "8002"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    # Enterprise HTTP exposure through business service layer
+    gateway.tetrate.io/service-tier: "business-layer"
+    gateway.tetrate.io/upstream-backend: "httpbingo"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Basic HTTP Service - validation-staging (via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Basic HTTP Service - validation-dev (via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-http-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "dev.val.com"
+    gateway.tetrate.io/port: "8003"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    # Enterprise HTTP exposure through business service layer
+    gateway.tetrate.io/service-tier: "business-layer"
+    gateway.tetrate.io/upstream-backend: "nginx"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Basic HTTP Service - validation-dev (via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Basic HTTP Service - validation-test (via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-http-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "test.val.com"
+    gateway.tetrate.io/port: "8004"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    # Enterprise HTTP exposure through business service layer
+    gateway.tetrate.io/service-tier: "business-layer"
+    gateway.tetrate.io/upstream-backend: "echo"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Basic HTTP Service - validation-test (via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 2: HTTPS Services Through Business Layer with Enhanced Security[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: HTTPS Service - validation-prod (via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: https-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "secure-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/port: "443"
+    gateway.tetrate.io/tls-secret: "market-data-gateway-tls"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-business-layer"
+    gateway.tetrate.io/upstream-backend: "httpbin"
+    gateway.tetrate.io/cloud-annotations: |
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying HTTPS Service - validation-prod (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: HTTPS Service - validation-staging (via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: https-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "secure-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/port: "443"
+    gateway.tetrate.io/tls-secret: "trading-engine-proxy-tls"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-business-layer"
+    gateway.tetrate.io/upstream-backend: "httpbingo"
+    gateway.tetrate.io/cloud-annotations: |
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying HTTPS Service - validation-staging (via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: HTTPS Service - validation-dev (via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: https-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "secure-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/port: "443"
+    gateway.tetrate.io/tls-secret: "compliance-validator-tls"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-business-layer"
+    gateway.tetrate.io/upstream-backend: "nginx"
+    gateway.tetrate.io/cloud-annotations: |
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying HTTPS Service - validation-dev (via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: HTTPS Service - validation-test (via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: https-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "secure-test.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/port: "443"
+    gateway.tetrate.io/tls-secret: "settlement-processor-tls"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-business-layer"
+    gateway.tetrate.io/upstream-backend: "echo"
+    gateway.tetrate.io/cloud-annotations: |
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying HTTPS Service - validation-test (via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 3: Multi-Tier API Gateway with Business Logic Routing[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: API v1 Service - validation-prod (via market-data-gateway → httpbin)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v1-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "api-prod.val.com"
+    gateway.tetrate.io/path: "/v1/market-data-gateway"
+    gateway.tetrate.io/local-path: "/market/quotes"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/core-backend: "httpbin"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 100
+          unit: MINUTE
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8001
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v1 Service - validation-prod (via market-data-gateway → httpbin) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v2 Service - validation-prod (via market-data-gateway → httpbin)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v2-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "api-prod.val.com"
+    gateway.tetrate.io/path: "/v2/market-data-gateway"
+    gateway.tetrate.io/local-path: "/market/realtime"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/core-backend: "httpbin"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 200
+          unit: MINUTE
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8002
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v2 Service - validation-prod (via market-data-gateway → httpbin) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v3 Service - validation-prod (via market-data-gateway → httpbin)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v3-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "api-prod.val.com"
+    gateway.tetrate.io/path: "/v3/market-data-gateway"
+    gateway.tetrate.io/local-path: "/market/analytics"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/core-backend: "httpbin"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 300
+          unit: MINUTE
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8003
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v3 Service - validation-prod (via market-data-gateway → httpbin) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v1 Service - validation-staging (via trading-engine-proxy → httpbingo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v1-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "api-staging.val.com"
+    gateway.tetrate.io/path: "/v1/trading-engine-proxy"
+    gateway.tetrate.io/local-path: "/orders/submit"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/core-backend: "httpbingo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 400
+          unit: MINUTE
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8004
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v1 Service - validation-staging (via trading-engine-proxy → httpbingo) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v2 Service - validation-staging (via trading-engine-proxy → httpbingo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v2-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "api-staging.val.com"
+    gateway.tetrate.io/path: "/v2/trading-engine-proxy"
+    gateway.tetrate.io/local-path: "/orders/status"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/core-backend: "httpbingo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 500
+          unit: MINUTE
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8005
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v2 Service - validation-staging (via trading-engine-proxy → httpbingo) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v3 Service - validation-staging (via trading-engine-proxy → httpbingo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v3-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "api-staging.val.com"
+    gateway.tetrate.io/path: "/v3/trading-engine-proxy"
+    gateway.tetrate.io/local-path: "/orders/modify"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/core-backend: "httpbingo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 600
+          unit: MINUTE
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8006
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v3 Service - validation-staging (via trading-engine-proxy → httpbingo) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v1 Service - validation-dev (via compliance-validator → nginx)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v1-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "api-dev.val.com"
+    gateway.tetrate.io/path: "/v1/compliance-validator"
+    gateway.tetrate.io/local-path: "/compliance/check"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/core-backend: "nginx"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 700
+          unit: MINUTE
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8007
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v1 Service - validation-dev (via compliance-validator → nginx) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v2 Service - validation-dev (via compliance-validator → nginx)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v2-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "api-dev.val.com"
+    gateway.tetrate.io/path: "/v2/compliance-validator"
+    gateway.tetrate.io/local-path: "/compliance/validate"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/core-backend: "nginx"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 800
+          unit: MINUTE
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8008
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v2 Service - validation-dev (via compliance-validator → nginx) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v3 Service - validation-dev (via compliance-validator → nginx)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v3-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "api-dev.val.com"
+    gateway.tetrate.io/path: "/v3/compliance-validator"
+    gateway.tetrate.io/local-path: "/compliance/audit"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/core-backend: "nginx"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 900
+          unit: MINUTE
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8009
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v3 Service - validation-dev (via compliance-validator → nginx) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v1 Service - validation-test (via settlement-processor → echo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v1-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "api-test.val.com"
+    gateway.tetrate.io/path: "/v1/settlement-processor"
+    gateway.tetrate.io/local-path: "/settlement/initiate"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/core-backend: "echo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 1000
+          unit: MINUTE
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8010
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v1 Service - validation-test (via settlement-processor → echo) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v2 Service - validation-test (via settlement-processor → echo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v2-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "api-test.val.com"
+    gateway.tetrate.io/path: "/v2/settlement-processor"
+    gateway.tetrate.io/local-path: "/settlement/status"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/core-backend: "echo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 1100
+          unit: MINUTE
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8011
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v2 Service - validation-test (via settlement-processor → echo) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: API v3 Service - validation-test (via settlement-processor → echo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-v3-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "api-test.val.com"
+    gateway.tetrate.io/path: "/v3/settlement-processor"
+    gateway.tetrate.io/local-path: "/settlement/confirm"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "api-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/core-backend: "echo"
+    gateway.tetrate.io/rate-limits: |
+      - dimensions:
+          - remoteAddress:
+              value: "*"
+        limit:
+          requestsPerUnit: 1200
+          unit: MINUTE
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8012
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying API v3 Service - validation-test (via settlement-processor → echo) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 4: Enterprise Authentication Services Through Business Layer[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: JWT Auth Service - validation-prod (via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: jwt-auth-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "auth-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "market-data-gateway-tls"
+    gateway.tetrate.io/path: "/secure"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "authenticated-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/jwt-issuers: |
+      - issuer: "https://accounts.google.com"
+        jwksUri: "https://www.googleapis.com/oauth2/v3/certs"
+      - issuer: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate"
+        jwksUri: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/certs"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying JWT Auth Service - validation-prod (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: JWT Auth Service - validation-staging (via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: jwt-auth-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "auth-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "trading-engine-proxy-tls"
+    gateway.tetrate.io/path: "/secure"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "authenticated-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/jwt-issuers: |
+      - issuer: "https://accounts.google.com"
+        jwksUri: "https://www.googleapis.com/oauth2/v3/certs"
+      - issuer: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate"
+        jwksUri: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/certs"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying JWT Auth Service - validation-staging (via trading-engine-proxy) (--skip-apply mode)
+
+secret/oauth-client-secret-dev created
+Mock kubectl apply executed
+[0;34m[INFO][0m Configuration: OIDC Auth Service - validation-dev (via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: oidc-auth-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "oidc-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "compliance-validator-tls"
+    gateway.tetrate.io/path: "/app"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "oidc-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/oidc-enabled: "true"
+    gateway.tetrate.io/oidc-config: |
+      grantType: "AUTHORIZATION_CODE"
+      clientId: "client-enterprise-auth"
+      clientTokenSecret: "oauth-client-secret-dev"
+      redirectUri: "https://oidc-dev.val.com/callback"
+      provider:
+        issuer: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate"
+        authorizationEndpoint: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/auth"
+        tokenEndpoint: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/token"
+        jwksUri: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/certs"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying OIDC Auth Service - validation-dev (via compliance-validator) (--skip-apply mode)
+
+secret/oauth-client-secret-test created
+Mock kubectl apply executed
+[0;34m[INFO][0m Configuration: OIDC Auth Service - validation-test (via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: oidc-auth-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "oidc-test.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "settlement-processor-tls"
+    gateway.tetrate.io/path: "/app"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "oidc-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/oidc-enabled: "true"
+    gateway.tetrate.io/oidc-config: |
+      grantType: "AUTHORIZATION_CODE"
+      clientId: "client-enterprise-auth"
+      clientTokenSecret: "oauth-client-secret-test"
+      redirectUri: "https://oidc-test.val.com/callback"
+      provider:
+        issuer: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate"
+        authorizationEndpoint: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/auth"
+        tokenEndpoint: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/token"
+        jwksUri: "https://keycloak.alder.dogfood.gcp.sandbox.tetrate.io/realms/tetrate/protocol/openid-connect/certs"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying OIDC Auth Service - validation-test (via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 5: WAF Protection with Business Logic Validation[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: WAF Protection Service - validation-prod (via market-data-gateway, prod rules)
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "waf-prod.val.com"
+    gateway.tetrate.io/path: "/protected"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "waf-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/waf-enabled: "true"
+    gateway.tetrate.io/custom-config: |
+      waf:
+        rules:
+          - "SecRuleEngine On"
+        businessLogicValidation: true
+        upstreamValidation: "market-data-gateway"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 9001
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying WAF Protection Service - validation-prod (via market-data-gateway, prod rules) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: WAF Protection Service - validation-staging (via trading-engine-proxy, staging rules)
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "waf-staging.val.com"
+    gateway.tetrate.io/path: "/staging-protected"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "waf-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/waf-enabled: "true"
+    gateway.tetrate.io/custom-config: |
+      waf:
+        rules:
+          - "SecRuleEngine DetectionOnly"
+        businessLogicValidation: true
+        upstreamValidation: "trading-engine-proxy"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 9002
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying WAF Protection Service - validation-staging (via trading-engine-proxy, staging rules) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: WAF Protection Service - validation-dev (via compliance-validator, dev rules)
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "waf-dev.val.com"
+    gateway.tetrate.io/path: "/dev-test"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "waf-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/waf-enabled: "true"
+    gateway.tetrate.io/custom-config: |
+      waf:
+        rules:
+          - "SecRuleEngine DetectionOnly\nSecDebugLogLevel 5"
+        businessLogicValidation: true
+        upstreamValidation: "compliance-validator"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 9003
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying WAF Protection Service - validation-dev (via compliance-validator, dev rules) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: WAF Protection Service - validation-test (via settlement-processor, test rules)
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "waf-test.val.com"
+    gateway.tetrate.io/path: "/test-endpoint"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "waf-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/waf-enabled: "true"
+    gateway.tetrate.io/custom-config: |
+      waf:
+        rules:
+          - "SecRuleEngine Off"
+        businessLogicValidation: true
+        upstreamValidation: "settlement-processor"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 9004
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying WAF Protection Service - validation-test (via settlement-processor, test rules) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 6: Cross-Environment Business Service Communication[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: Cross-Environment Service - prod to staging (via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-env-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "cross-prod-to-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "market-data-gateway-tls"
+    gateway.tetrate.io/path: "/cross-env"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "cross-env-business-layer"
+    gateway.tetrate.io/source-business-service: "market-data-gateway"
+    gateway.tetrate.io/target-environment: "staging"
+    gateway.tetrate.io/cors-policy: |
+      allowOrigin:
+        - "https://*.val.com"
+        - "https://staging.val.com"
+      allowMethods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+      allowHeaders:
+        - "authorization"
+        - "content-type"
+        - "x-business-service"
+        - "x-env-source"
+        - "x-env-target"
+        - "x-trace-id"
+      maxAge: "86400s"
+      allowCredentials: true
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Cross-Environment Service - prod to staging (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Cross-Environment Service - staging to dev (via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-env-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "cross-staging-to-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "trading-engine-proxy-tls"
+    gateway.tetrate.io/path: "/cross-env"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "cross-env-business-layer"
+    gateway.tetrate.io/source-business-service: "trading-engine-proxy"
+    gateway.tetrate.io/target-environment: "dev"
+    gateway.tetrate.io/cors-policy: |
+      allowOrigin:
+        - "https://*.val.com"
+        - "https://dev.val.com"
+      allowMethods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+      allowHeaders:
+        - "authorization"
+        - "content-type"
+        - "x-business-service"
+        - "x-env-source"
+        - "x-env-target"
+        - "x-trace-id"
+      maxAge: "86400s"
+      allowCredentials: true
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Cross-Environment Service - staging to dev (via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Cross-Environment Service - dev to test (via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-env-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "cross-dev-to-test.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "compliance-validator-tls"
+    gateway.tetrate.io/path: "/cross-env"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "cross-env-business-layer"
+    gateway.tetrate.io/source-business-service: "compliance-validator"
+    gateway.tetrate.io/target-environment: "test"
+    gateway.tetrate.io/cors-policy: |
+      allowOrigin:
+        - "https://*.val.com"
+        - "https://test.val.com"
+      allowMethods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+      allowHeaders:
+        - "authorization"
+        - "content-type"
+        - "x-business-service"
+        - "x-env-source"
+        - "x-env-target"
+        - "x-trace-id"
+      maxAge: "86400s"
+      allowCredentials: true
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Cross-Environment Service - dev to test (via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Cross-Environment Service - test to prod (via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-env-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "cross-test-to-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "settlement-processor-tls"
+    gateway.tetrate.io/path: "/cross-env"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "cross-env-business-layer"
+    gateway.tetrate.io/source-business-service: "settlement-processor"
+    gateway.tetrate.io/target-environment: "prod"
+    gateway.tetrate.io/cors-policy: |
+      allowOrigin:
+        - "https://*.val.com"
+        - "https://prod.val.com"
+      allowMethods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+      allowHeaders:
+        - "authorization"
+        - "content-type"
+        - "x-business-service"
+        - "x-env-source"
+        - "x-env-target"
+        - "x-trace-id"
+      maxAge: "86400s"
+      allowCredentials: true
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Cross-Environment Service - test to prod (via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 7: Load Balancing with Business Service Intelligence[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: Load Balancing Service - validation-prod (round_robin via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "lb-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "market-data-gateway-tls"
+    gateway.tetrate.io/path: "/lb-test"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "lb-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+    gateway.tetrate.io/load-balancer: "round_robin"
+    gateway.tetrate.io/business-logic-lb: "true"
+    gateway.tetrate.io/health-check: |
+      path: "/health"
+      interval: "30s"
+      timeout: "5s"
+      healthyThreshold: 2
+      unhealthyThreshold: 3
+      businessServiceHealth: true
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Load Balancing Service - validation-prod (round_robin via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Load Balancing Service - validation-staging (least_conn via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "lb-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "trading-engine-proxy-tls"
+    gateway.tetrate.io/path: "/lb-test"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "lb-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+    gateway.tetrate.io/load-balancer: "least_conn"
+    gateway.tetrate.io/business-logic-lb: "true"
+    gateway.tetrate.io/health-check: |
+      path: "/health"
+      interval: "30s"
+      timeout: "5s"
+      healthyThreshold: 2
+      unhealthyThreshold: 3
+      businessServiceHealth: true
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Load Balancing Service - validation-staging (least_conn via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Load Balancing Service - validation-dev (random via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "lb-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "compliance-validator-tls"
+    gateway.tetrate.io/path: "/lb-test"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "lb-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+    gateway.tetrate.io/load-balancer: "random"
+    gateway.tetrate.io/business-logic-lb: "true"
+    gateway.tetrate.io/health-check: |
+      path: "/health"
+      interval: "30s"
+      timeout: "5s"
+      healthyThreshold: 2
+      unhealthyThreshold: 3
+      businessServiceHealth: true
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Load Balancing Service - validation-dev (random via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Load Balancing Service - validation-test (hash via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "lb-test.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "settlement-processor-tls"
+    gateway.tetrate.io/path: "/lb-test"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "lb-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+    gateway.tetrate.io/load-balancer: "hash"
+    gateway.tetrate.io/business-logic-lb: "true"
+    gateway.tetrate.io/health-check: |
+      path: "/health"
+      interval: "30s"
+      timeout: "5s"
+      healthyThreshold: 2
+      unhealthyThreshold: 3
+      businessServiceHealth: true
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Load Balancing Service - validation-test (hash via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mDemo 8: Multi-Protocol Services Through Business Layer (HTTP/HTTPS/Redirects)[0m
+[0;32m================================[0m
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTP Service - validation-prod (via market-data-gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-http-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "multi-http-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTP"
+    gateway.tetrate.io/port: "80"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTP Service - validation-prod (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTPS Service - validation-prod (via market-data-gateway)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-https-service
+  namespace: validation-prod
+  annotations:
+    gateway.tetrate.io/host: "multi-https-prod.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "market-data-gateway-tls"
+    gateway.tetrate.io/https-redirect: "true"
+    gateway.tetrate.io/http-port: "8080"
+    gateway.tetrate.io/https-redirect-port: "8443"
+    gateway.tetrate.io/workload-selector: "app=validation-prod-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "market-data-gateway"
+spec:
+  selector:
+    business-service: market-data-gateway
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTPS Service - validation-prod (via market-data-gateway) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTP Service - validation-staging (via trading-engine-proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-http-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "multi-http-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTP"
+    gateway.tetrate.io/port: "80"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTP Service - validation-staging (via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTPS Service - validation-staging (via trading-engine-proxy)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-https-service
+  namespace: validation-staging
+  annotations:
+    gateway.tetrate.io/host: "multi-https-staging.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "trading-engine-proxy-tls"
+    gateway.tetrate.io/https-redirect: "true"
+    gateway.tetrate.io/http-port: "8080"
+    gateway.tetrate.io/https-redirect-port: "8443"
+    gateway.tetrate.io/workload-selector: "app=validation-staging-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "trading-engine-proxy"
+spec:
+  selector:
+    business-service: trading-engine-proxy
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTPS Service - validation-staging (via trading-engine-proxy) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTP Service - validation-dev (via compliance-validator)
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-http-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "multi-http-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTP"
+    gateway.tetrate.io/port: "80"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTP Service - validation-dev (via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTPS Service - validation-dev (via compliance-validator)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-https-service
+  namespace: validation-dev
+  annotations:
+    gateway.tetrate.io/host: "multi-https-dev.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "compliance-validator-tls"
+    gateway.tetrate.io/https-redirect: "true"
+    gateway.tetrate.io/http-port: "8080"
+    gateway.tetrate.io/https-redirect-port: "8443"
+    gateway.tetrate.io/workload-selector: "app=validation-dev-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "compliance-validator"
+spec:
+  selector:
+    business-service: compliance-validator
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTPS Service - validation-dev (via compliance-validator) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTP Service - validation-test (via settlement-processor)
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-http-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "multi-http-test.val.com"
+    gateway.tetrate.io/protocol: "HTTP"
+    gateway.tetrate.io/port: "80"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTP Service - validation-test (via settlement-processor) (--skip-apply mode)
+
+[0;34m[INFO][0m Configuration: Multi-Protocol HTTPS Service - validation-test (via settlement-processor)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-https-service
+  namespace: validation-test
+  annotations:
+    gateway.tetrate.io/host: "multi-https-test.val.com"
+    gateway.tetrate.io/protocol: "HTTPS"
+    gateway.tetrate.io/tls-secret: "settlement-processor-tls"
+    gateway.tetrate.io/https-redirect: "true"
+    gateway.tetrate.io/http-port: "8080"
+    gateway.tetrate.io/https-redirect-port: "8443"
+    gateway.tetrate.io/workload-selector: "app=validation-test-gateway"
+    gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/service-tier: "secure-multi-protocol-business-layer"
+    gateway.tetrate.io/business-service: "settlement-processor"
+spec:
+  selector:
+    business-service: settlement-processor
+  ports:
+  - port: 8000
+    targetPort: 9080
+    name: http
+
+[0;34m[INFO][0m Skipped applying Multi-Protocol HTTPS Service - validation-test (via settlement-processor) (--skip-apply mode)
+
+
+[0;32m================================[0m
+[0;32mConfiguration Preview Completed[0m
+[0;32m================================[0m
+[0;34m[INFO][0m All configurations were displayed. Run without --skip-apply to apply them.
