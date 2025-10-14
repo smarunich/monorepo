@@ -734,6 +734,9 @@ setup_environment() {
         # Label namespace for service mesh injection
         log_info "Labeling namespace $namespace for service mesh injection"
         kubectl label namespace "$namespace" istio-injection=enabled --overwrite
+        kubectl label namespace "$namespace" tetrate.io/rev=default --overwrite
+
+        kubectl annotate namespace "$namespace" traffic.tetrate.io/global="true" --overwrite
 
         # Add environment and tier labels
         local env_type=$(echo "$namespace" | cut -d'-' -f2)

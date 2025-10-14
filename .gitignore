@@ -1,3 +1,4 @@
+*httpbin_test_output*
 *.key
 *.pem
 *.csr
