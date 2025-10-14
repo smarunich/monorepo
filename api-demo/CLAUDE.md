@@ -10,10 +10,12 @@ This is the **TSB Gateway API Demo Suite** - a comprehensive demonstration and t
 
 ```
 api-demo/
-├── enterprise-gateway-demo.sh    # **NEW** Enterprise multi-tier architecture with financial service names
+├── Taskfile.yml                  # Task automation for demo workflows (47+ tasks)
+├── enterprise-gateway-demo.sh    # Enterprise multi-tier architecture with financial service names
 ├── advanced-demo.sh              # Main demo deployment script
+├── run-advanced-tests.sh         # Sequential test runner with auto-discovery
+├── run-advanced-tests-parallel.sh # Parallel test runner for faster execution
 ├── test-advanced-demo-gateways.sh # Comprehensive testing script
-├── run-advanced-tests.sh         # Auto-discovery test runner
 ├── test-advanced-demo.sh         # Legacy single-backend test script
 ├── tests/                        # Test framework directory
 │   ├── test-enterprise-gateway-demo.sh  # Comprehensive test suite
@@ -27,12 +29,80 @@ api-demo/
 
 - **Tetrate Service Bridge (TSB)** - Service mesh gateway management
 - **Kubernetes** - Container orchestration platform
+- **Task (go-task)** - Modern task runner and build tool
 - **Bash** - Shell scripting for automation
 - **curl** - HTTP client for testing
 - **kubectl** - Kubernetes command-line tool
 - **Docker Images**: httpbin, httpbingo, nginx, echo server
 
-## Development Commands
+## Quick Start with Taskfile
+
+The **Taskfile.yml** provides a modern, declarative way to run all demo workflows. Install [Task](https://taskfile.dev/) first if you haven't already.
+
+### Installation
+```bash
+# macOS
+brew install go-task/tap/go-task
+
+# Linux
+sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+
+# Or download from: https://github.com/go-task/task/releases
+```
+
+### Quick Commands
+```bash
+# Show quick start guide
+task
+
+# Show all available tasks
+task --list
+
+# Bootstrap: check prerequisites and cluster
+task bootstrap:all
+
+# Deploy and test advanced demo
+task demo:advanced
+
+# Deploy and test enterprise demo
+task demo:enterprise
+
+# Full workflow with failover testing
+task demo:full:enterprise:failover
+
+# Inspect resources
+task inspect:all
+
+# Generate traffic (uses run-advanced-tests.sh)
+task traffic:generate:light    # Sequential: 60 iterations
+task traffic:generate:medium   # Sequential: 5 iterations
+task traffic:generate:heavy    # Parallel: 3 iterations across all environments
+task traffic:stress            # Parallel: 10 iterations stress test
+
+# Cleanup
+task cleanup:all
+```
+
+### Configuration
+Override default values using environment-style variables:
+```bash
+# Use custom namespace and domain
+task demo:advanced NAMESPACE=mycompany DOMAIN=api.company.com
+
+# Deploy enterprise demo with custom settings
+task demo:enterprise NAMESPACE=fintech DOMAIN=api.fintech.com CLOUD_PROVIDER=gcp
+```
+
+Default configuration:
+- **NAMESPACE**: `wealth`
+- **DOMAIN**: `api.wealth.com`
+- **CLOUD_PROVIDER**: `aws`
+- **MAX_ITERATIONS**: `10`
+- **SLEEP_INTERVAL**: `5`
+
+View current config: `task config:show`
+
+## Development Commands (Shell Scripts)
 
 ### Demo Deployment
 ```bash
@@ -280,6 +350,144 @@ kubectl get secrets -n tetrate-system | grep tls
 kubectl describe secret {secret-name} -n tetrate-system
 ```
 
+## Taskfile Task Reference
+
+The `Taskfile.yml` provides 47+ tasks organized into categories:
+
+### Bootstrap Tasks
+- `bootstrap:check` - Check prerequisites (kubectl, curl, jq, openssl)
+- `bootstrap:cluster` - Verify Kubernetes cluster connectivity
+- `bootstrap:tsb` - Verify TSB Gateway installation
+- `bootstrap:all` - Run all bootstrap checks
+
+### Advanced Demo Workflow
+- `demo:advanced:preview` - Preview configurations without applying
+- `demo:advanced:deploy` - Deploy advanced demo (4 environments, 4 backends, 50+ configs)
+- `demo:advanced:verify` - Verify deployment
+- `demo:advanced:test` - Run comprehensive tests
+- `demo:advanced:test:parallel` - Run tests in parallel
+- `demo:advanced:test:continuous` - Run continuous testing
+- `demo:advanced` - Complete workflow: deploy → verify → test
+
+### Enterprise Demo Workflow
+- `demo:enterprise:preview` - Preview enterprise configurations
+- `demo:enterprise:deploy` - Deploy enterprise multi-tier demo
+- `demo:enterprise:deploy:broken` - Deploy with broken services for failover testing
+- `demo:enterprise:verify` - Verify enterprise deployment
+- `demo:enterprise:test` - Run comprehensive tests
+- `demo:enterprise:test:continuous` - Run continuous testing
+- `demo:enterprise` - Complete workflow: deploy → verify → test
+
+### Traffic Generation
+- `traffic:generate:light` - Light traffic using sequential test runner (60 iterations)
+- `traffic:generate:medium` - Medium load using sequential test runner (5 iterations)
+- `traffic:generate:heavy` - Heavy load using parallel test runner (3 iterations)
+- `traffic:stress` - Parallel stress test across all environments (10 iterations)
+
+### Monitoring and Inspection
+- `inspect:namespaces` - List all demo namespaces
+- `inspect:pods` - Show all pods across environments
+- `inspect:services` - Show all services across environments
+- `inspect:gateways` - Show gateway configurations
+- `inspect:tls` - Show TLS secrets
+- `inspect:logs` - Tail logs from specific pod (requires POD_NAME and ENV)
+- `inspect:all` - Complete inspection of demo environment
+
+### Debugging
+- `debug:describe:pod` - Describe specific pod (requires POD_NAME and ENV)
+- `debug:describe:service` - Describe specific service (requires SERVICE_NAME and ENV)
+- `debug:events` - Show recent events in namespace (requires ENV)
+- `debug:port-forward` - Port forward to service (requires SERVICE_NAME, ENV, and PORT)
+
+### Cleanup
+- `cleanup:advanced` - Clean up advanced demo resources
+- `cleanup:enterprise` - Clean up enterprise demo resources
+- `cleanup:namespaces` - Force delete demo namespaces (with confirmation)
+- `cleanup:tls` - Clean up TLS secrets
+- `cleanup:all` - Complete cleanup of all resources
+
+### Complete Workflows
+- `demo:full:advanced` - Full advanced workflow: bootstrap → deploy → test → report
+- `demo:full:enterprise` - Full enterprise workflow: bootstrap → deploy → test → report
+- `demo:full:enterprise:failover` - Enterprise demo with broken services for failover testing
+- `demo:quick` - Quick demo with minimal testing
+
+### Utility Tasks
+- `help` - Show all available tasks with descriptions
+- `version` - Show versions of key components
+- `config:show` - Show current configuration variables
+- `default` - Show quick start guide
+
+### Example Workflows
+
+#### Complete Demo Lifecycle
+```bash
+# 1. Bootstrap and verify prerequisites
+task bootstrap:all
+
+# 2. Deploy enterprise demo with failover testing
+task demo:enterprise:deploy:broken
+
+# 3. Verify deployment
+task demo:enterprise:verify
+
+# 4. Run comprehensive tests
+task demo:enterprise:test
+
+# 5. Generate background traffic (runs 60 test iterations)
+task traffic:generate:light
+
+# 6. Inspect resources
+task inspect:all
+
+# 7. Debug specific service
+task debug:describe:service SERVICE_NAME=market-data-gateway ENV=prod
+
+# 8. Cleanup when done
+task cleanup:enterprise
+```
+
+#### Quick Testing Workflow
+```bash
+# Deploy, verify, and test in one command
+task demo:advanced
+
+# Or use the full workflow
+task demo:full:advanced
+```
+
+#### Custom Configuration
+```bash
+# Deploy with custom namespace and domain
+task demo:enterprise \
+  NAMESPACE=fintech \
+  DOMAIN=api.fintech.com \
+  CLOUD_PROVIDER=gcp
+
+# Run continuous tests with custom iterations
+task demo:advanced:test:continuous \
+  NAMESPACE=mycompany \
+  MAX_ITERATIONS=50
+```
+
+#### Debugging and Inspection
+```bash
+# View all resources
+task inspect:all
+
+# View logs from specific pod
+task inspect:logs POD_NAME=market-data-gateway-xxx ENV=prod
+
+# Port forward to service
+task debug:port-forward \
+  SERVICE_NAME=market-data-gateway \
+  ENV=prod \
+  PORT=8080:80
+
+# Check recent events
+task debug:events ENV=staging
+```
+
 ## Important Notes
 
 - **Demo Purpose**: This is for demonstration and testing only
@@ -287,6 +495,7 @@ kubectl describe secret {secret-name} -n tetrate-system
 - **Namespace Isolation**: Each environment uses separate namespaces
 - **Split Gateway**: Each environment has dedicated gateway workload
 - **Extensibility**: Designed to be easily extended with new scenarios
+- **Taskfile Advantage**: Use `task` for standardized workflows and easier demo execution
 
 ## Support and Documentation
 

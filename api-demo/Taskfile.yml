@@ -1,0 +1,582 @@
+version: '3'
+
+# TSB Gateway API Demo Suite - Taskfile
+# Orchestrates complete demo lifecycle: bootstrap → deploy → test → traffic → cleanup
+#
+# Quick Start:
+#   task demo:advanced          # Deploy and test advanced demo
+#   task demo:enterprise        # Deploy and test enterprise demo
+#   task demo:full              # Complete workflow with traffic generation
+#   task cleanup:all            # Clean up all resources
+
+vars:
+  NAMESPACE: '{{.NAMESPACE | default "wealth"}}'
+  DOMAIN: '{{.DOMAIN | default "api.wealth.com"}}'
+  CLOUD_PROVIDER: '{{.CLOUD_PROVIDER | default "aws"}}'
+  MAX_ITERATIONS: '{{.MAX_ITERATIONS | default "10"}}'
+  SLEEP_INTERVAL: '{{.SLEEP_INTERVAL | default "5"}}'
+
+tasks:
+  # ============================================================================
+  # BOOTSTRAP TASKS - Prerequisites and validation
+  # ============================================================================
+
+  bootstrap:check:
+    desc: "Check prerequisites (kubectl, curl, jq, openssl)"
+    cmds:
+      - |
+        echo "Checking prerequisites..."
+        command -v kubectl >/dev/null 2>&1 || { echo "kubectl not found"; exit 1; }
+        command -v curl >/dev/null 2>&1 || { echo "curl not found"; exit 1; }
+        command -v jq >/dev/null 2>&1 || { echo "jq not found"; exit 1; }
+        command -v openssl >/dev/null 2>&1 || { echo "openssl not found"; exit 1; }
+        echo "All prerequisites met"
+    silent: false
+
+  bootstrap:cluster:
+    desc: "Verify Kubernetes cluster connectivity"
+    cmds:
+      - echo "Checking Kubernetes cluster connection..."
+      - kubectl cluster-info
+      - kubectl get nodes
+      - echo "Cluster connectivity verified"
+    silent: false
+
+  bootstrap:tsb:
+    desc: "Verify TSB Gateway installation"
+    cmds:
+      - |
+        echo "Checking TSB Gateway installation..."
+        kubectl get deployment -n tetrate-system || echo "Warning: tetrate-system namespace not found"
+        kubectl get deployment -n istio-system || echo "Warning: istio-system namespace not found"
+        echo "TSB Gateway check complete"
+    silent: false
+
+  bootstrap:all:
+    desc: "Run all bootstrap checks"
+    cmds:
+      - task: bootstrap:check
+      - task: bootstrap:cluster
+      - task: bootstrap:tsb
+
+  # ============================================================================
+  # DEMO DEPLOYMENT WORKFLOWS
+  # ============================================================================
+
+  demo:advanced:preview:
+    desc: "Preview advanced demo configurations without applying"
+    cmds:
+      - |
+        echo "Previewing advanced demo configuration..."
+        ./advanced-demo.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          -c {{.CLOUD_PROVIDER}} \
+          --skip-apply
+
+  demo:advanced:deploy:
+    desc: "Deploy advanced demo (4 environments, 4 backends, 50+ configs)"
+    deps: [bootstrap:check]
+    cmds:
+      - |
+        echo "Deploying advanced demo..."
+        echo "  Namespace: {{.NAMESPACE}}"
+        echo "  Domain: {{.DOMAIN}}"
+        echo "  Cloud: {{.CLOUD_PROVIDER}}"
+        ./advanced-demo.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          -c {{.CLOUD_PROVIDER}}
+
+  demo:advanced:verify:
+    desc: "Verify advanced demo deployment"
+    cmds:
+      - |
+        echo "Verifying deployment in namespaces:"
+        for env in prod staging dev test; do
+          namespace="{{.NAMESPACE}}-$env"
+          echo ""
+          echo "=== $namespace ==="
+          kubectl get pods,services -n "$namespace" 2>/dev/null || echo "Namespace $namespace not found"
+        done
+
+  demo:advanced:test:
+    desc: "Run comprehensive tests on advanced demo"
+    cmds:
+      - |
+        echo "Running comprehensive tests..."
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}}
+
+  demo:advanced:test:parallel:
+    desc: "Run tests in parallel for faster execution"
+    cmds:
+      - |
+        echo "Running parallel tests..."
+        ./run-advanced-tests-parallel.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}}
+
+  demo:advanced:test:continuous:
+    desc: "Run continuous testing (default: 10 iterations)"
+    cmds:
+      - |
+        echo "Running continuous tests (max: {{.MAX_ITERATIONS}} iterations)..."
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max {{.MAX_ITERATIONS}}
+
+  demo:advanced:
+    desc: "Complete advanced demo workflow: deploy → verify → test"
+    cmds:
+      - task: demo:advanced:deploy
+      - task: demo:advanced:verify
+      - task: demo:advanced:test
+
+  demo:enterprise:preview:
+    desc: "Preview enterprise demo configurations without applying"
+    cmds:
+      - |
+        echo "Previewing enterprise demo configuration..."
+        ./enterprise-gateway-demo.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          -c {{.CLOUD_PROVIDER}} \
+          --skip-apply
+
+  demo:enterprise:deploy:
+    desc: "Deploy enterprise multi-tier demo with Giraffe business services"
+    deps: [bootstrap:check]
+    cmds:
+      - |
+        echo "Deploying enterprise demo..."
+        echo "  Namespace: {{.NAMESPACE}}"
+        echo "  Domain: {{.DOMAIN}}"
+        echo "  Cloud: {{.CLOUD_PROVIDER}}"
+        ./enterprise-gateway-demo.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          -c {{.CLOUD_PROVIDER}}
+
+  demo:enterprise:deploy:broken:
+    desc: "Deploy enterprise demo with broken services for failover testing"
+    deps: [bootstrap:check]
+    cmds:
+      - |
+        echo "Deploying enterprise demo with broken services..."
+        echo "  Namespace: {{.NAMESPACE}}"
+        echo "  Domain: {{.DOMAIN}}"
+        echo "  Error injection: ENABLED"
+        ./enterprise-gateway-demo.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          -c {{.CLOUD_PROVIDER}} \
+          --broken-services
+
+  demo:enterprise:verify:
+    desc: "Verify enterprise demo deployment"
+    cmds:
+      - |
+        echo "Verifying enterprise deployment:"
+        for env in prod staging dev test; do
+          namespace="{{.NAMESPACE}}-$env"
+          echo ""
+          echo "=== $namespace ==="
+          echo "Business Services:"
+          kubectl get pods -n "$namespace" -l tier=business-service 2>/dev/null || echo "  None found"
+          echo "Core Backends:"
+          kubectl get pods -n "$namespace" -l tier=backend 2>/dev/null || echo "  None found"
+          echo "Services:"
+          kubectl get services -n "$namespace" 2>/dev/null || echo "  None found"
+        done
+
+  demo:enterprise:test:
+    desc: "Run comprehensive tests on enterprise demo"
+    cmds:
+      - |
+        echo "Running enterprise demo tests..."
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}}
+
+  demo:enterprise:test:continuous:
+    desc: "Run continuous testing on enterprise demo"
+    cmds:
+      - |
+        echo "Running continuous enterprise tests (max: {{.MAX_ITERATIONS}} iterations)..."
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max {{.MAX_ITERATIONS}}
+
+  demo:enterprise:
+    desc: "Complete enterprise demo workflow: deploy → verify → test"
+    cmds:
+      - task: demo:enterprise:deploy
+      - task: demo:enterprise:verify
+      - task: demo:enterprise:test
+
+  # ============================================================================
+  # TRAFFIC GENERATION TASKS
+  # ============================================================================
+
+  traffic:generate:light:
+    desc: "Generate light background traffic using test runner (sequential)"
+    cmds:
+      - |
+        echo "Generating light traffic using sequential test runner..."
+        echo "Running 60 iterations with 1 second sleep between tests"
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max 60
+
+  traffic:generate:medium:
+    desc: "Generate medium traffic load using test runner (5 iterations)"
+    cmds:
+      - |
+        echo "Generating medium traffic using sequential test runner..."
+        echo "Running 5 continuous iterations"
+        ./run-advanced-tests.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max 5
+
+  traffic:generate:heavy:
+    desc: "Generate heavy traffic load using parallel test runner"
+    cmds:
+      - |
+        echo "Generating heavy traffic using parallel test runner..."
+        echo "WARNING: This will create significant load across all environments"
+        ./run-advanced-tests-parallel.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max 3
+
+  traffic:stress:
+    desc: "Run stress test with parallel execution (10 iterations)"
+    cmds:
+      - |
+        echo "Running parallel stress test across all environments..."
+        ./run-advanced-tests-parallel.sh \
+          -n {{.NAMESPACE}} \
+          -d {{.DOMAIN}} \
+          --continuous \
+          --max 10
+
+  # ============================================================================
+  # MONITORING AND INSPECTION TASKS
+  # ============================================================================
+
+  inspect:namespaces:
+    desc: "List all demo namespaces"
+    cmds:
+      - |
+        echo "Demo namespaces:"
+        kubectl get namespaces | grep "{{.NAMESPACE}}-" || echo "No demo namespaces found"
+
+  inspect:pods:
+    desc: "Show all pods across demo environments"
+    cmds:
+      - |
+        for env in prod staging dev test; do
+          namespace="{{.NAMESPACE}}-$env"
+          echo ""
+          echo "=== Pods in $namespace ==="
+          kubectl get pods -n "$namespace" -o wide 2>/dev/null || echo "Namespace not found"
+        done
+
+  inspect:services:
+    desc: "Show all services across demo environments"
+    cmds:
+      - |
+        for env in prod staging dev test; do
+          namespace="{{.NAMESPACE}}-$env"
+          echo ""
+          echo "=== Services in $namespace ==="
+          kubectl get services -n "$namespace" -o wide 2>/dev/null || echo "Namespace not found"
+        done
+
+  inspect:gateways:
+    desc: "Show gateway configurations"
+    cmds:
+      - |
+        echo "Gateway services in tetrate-system:"
+        kubectl get services -n tetrate-system | grep gateway || echo "No gateways found"
+        echo ""
+        echo "Gateway services in istio-system:"
+        kubectl get services -n istio-system | grep gateway || echo "No gateways found"
+
+  inspect:tls:
+    desc: "Show TLS secrets"
+    cmds:
+      - |
+        echo "TLS secrets in tetrate-system:"
+        kubectl get secrets -n tetrate-system | grep tls || echo "No TLS secrets found"
+
+  inspect:logs:
+    desc: "Tail logs from a specific pod (requires POD_NAME and ENV vars)"
+    cmds:
+      - |
+        if [ -z "{{.POD_NAME}}" ] || [ -z "{{.ENV}}" ]; then
+          echo "Usage: task inspect:logs POD_NAME=<pod-name> ENV=<prod|staging|dev|test>"
+          exit 1
+        fi
+        namespace="{{.NAMESPACE}}-{{.ENV}}"
+        echo "Tailing logs from {{.POD_NAME}} in $namespace..."
+        kubectl logs -f "{{.POD_NAME}}" -n "$namespace"
+
+  inspect:all:
+    desc: "Complete inspection of demo environment"
+    cmds:
+      - task: inspect:namespaces
+      - task: inspect:pods
+      - task: inspect:services
+      - task: inspect:gateways
+
+  # ============================================================================
+  # DEBUGGING TASKS
+  # ============================================================================
+
+  debug:describe:pod:
+    desc: "Describe a specific pod (requires POD_NAME and ENV vars)"
+    cmds:
+      - |
+        if [ -z "{{.POD_NAME}}" ] || [ -z "{{.ENV}}" ]; then
+          echo "Usage: task debug:describe:pod POD_NAME=<pod-name> ENV=<prod|staging|dev|test>"
+          exit 1
+        fi
+        namespace="{{.NAMESPACE}}-{{.ENV}}"
+        kubectl describe pod "{{.POD_NAME}}" -n "$namespace"
+
+  debug:describe:service:
+    desc: "Describe a specific service (requires SERVICE_NAME and ENV vars)"
+    cmds:
+      - |
+        if [ -z "{{.SERVICE_NAME}}" ] || [ -z "{{.ENV}}" ]; then
+          echo "Usage: task debug:describe:service SERVICE_NAME=<svc-name> ENV=<prod|staging|dev|test>"
+          exit 1
+        fi
+        namespace="{{.NAMESPACE}}-{{.ENV}}"
+        kubectl describe service "{{.SERVICE_NAME}}" -n "$namespace"
+
+  debug:events:
+    desc: "Show recent events in a namespace (requires ENV var)"
+    cmds:
+      - |
+        if [ -z "{{.ENV}}" ]; then
+          echo "Usage: task debug:events ENV=<prod|staging|dev|test>"
+          exit 1
+        fi
+        namespace="{{.NAMESPACE}}-{{.ENV}}"
+        echo "Recent events in $namespace:"
+        kubectl get events -n "$namespace" --sort-by='.lastTimestamp'
+
+  debug:port-forward:
+    desc: "Port forward to a service (requires SERVICE_NAME, ENV, and PORT vars)"
+    cmds:
+      - |
+        if [ -z "{{.SERVICE_NAME}}" ] || [ -z "{{.ENV}}" ] || [ -z "{{.PORT}}" ]; then
+          echo "Usage: task debug:port-forward SERVICE_NAME=<svc> ENV=<env> PORT=<local-port:remote-port>"
+          exit 1
+        fi
+        namespace="{{.NAMESPACE}}-{{.ENV}}"
+        echo "Port forwarding {{.SERVICE_NAME}} in $namespace..."
+        kubectl port-forward -n "$namespace" "service/{{.SERVICE_NAME}}" {{.PORT}}
+
+  # ============================================================================
+  # CLEANUP TASKS
+  # ============================================================================
+
+  cleanup:advanced:
+    desc: "Clean up advanced demo resources"
+    cmds:
+      - |
+        echo "Cleaning up advanced demo resources..."
+        ./advanced-demo.sh --cleanup -n {{.NAMESPACE}}
+        echo "Advanced demo cleanup complete"
+
+  cleanup:enterprise:
+    desc: "Clean up enterprise demo resources"
+    cmds:
+      - |
+        echo "Cleaning up enterprise demo resources..."
+        ./enterprise-gateway-demo.sh --cleanup -n {{.NAMESPACE}}
+        echo "Enterprise demo cleanup complete"
+
+  cleanup:namespaces:
+    desc: "Force delete demo namespaces (use with caution)"
+    cmds:
+      - |
+        echo "WARNING: This will forcefully delete all demo namespaces"
+        read -p "Are you sure? (yes/no): " confirm
+        if [ "$confirm" = "yes" ]; then
+          for env in prod staging dev test; do
+            namespace="{{.NAMESPACE}}-$env"
+            echo "Deleting $namespace..."
+            kubectl delete namespace "$namespace" --ignore-not-found=true
+          done
+          echo "Namespace cleanup complete"
+        else
+          echo "Cleanup cancelled"
+        fi
+
+  cleanup:tls:
+    desc: "Clean up TLS secrets in tetrate-system"
+    cmds:
+      - |
+        echo "Cleaning up TLS secrets..."
+        kubectl delete secrets -n tetrate-system -l demo={{.NAMESPACE}} --ignore-not-found=true
+        echo "TLS secret cleanup complete"
+
+  cleanup:all:
+    desc: "Complete cleanup of all demo resources"
+    cmds:
+      - task: cleanup:advanced
+      - task: cleanup:enterprise
+      - echo "All demo resources cleaned up"
+
+  # ============================================================================
+  # COMPLETE WORKFLOW TASKS
+  # ============================================================================
+
+  demo:full:advanced:
+    desc: "Full advanced demo: bootstrap → deploy → test → traffic → report"
+    cmds:
+      - echo "=== FULL ADVANCED DEMO WORKFLOW ==="
+      - task: bootstrap:all
+      - task: demo:advanced:deploy
+      - task: demo:advanced:verify
+      - task: demo:advanced:test
+      - echo ""
+      - echo "=== Demo deployment complete ==="
+      - echo "Run 'task traffic:generate:light' for background traffic"
+      - echo "Run 'task inspect:all' to inspect resources"
+      - echo "Run 'task cleanup:advanced' when done"
+
+  demo:full:enterprise:
+    desc: "Full enterprise demo: bootstrap → deploy → test → traffic → report"
+    cmds:
+      - echo "=== FULL ENTERPRISE DEMO WORKFLOW ==="
+      - task: bootstrap:all
+      - task: demo:enterprise:deploy
+      - task: demo:enterprise:verify
+      - task: demo:enterprise:test
+      - echo ""
+      - echo "=== Enterprise demo deployment complete ==="
+      - echo "Run 'task traffic:generate:light' for background traffic"
+      - echo "Run 'task inspect:all' to inspect resources"
+      - echo "Run 'task cleanup:enterprise' when done"
+
+  demo:full:enterprise:failover:
+    desc: "Full enterprise demo with broken services for failover testing"
+    cmds:
+      - echo "=== FULL ENTERPRISE DEMO WITH FAILOVER TESTING ==="
+      - task: bootstrap:all
+      - task: demo:enterprise:deploy:broken
+      - task: demo:enterprise:verify
+      - echo ""
+      - echo "Testing with injected errors (50-100% error rates)..."
+      - task: demo:enterprise:test
+      - echo ""
+      - echo "=== Failover demo complete ==="
+      - echo "Review logs and metrics for circuit breaker and failover behavior"
+      - echo "Run 'task cleanup:enterprise' when done"
+
+  demo:quick:
+    desc: "Quick demo with minimal testing (fastest option)"
+    cmds:
+      - task: bootstrap:check
+      - task: demo:advanced:deploy
+      - task: demo:advanced:verify
+      - echo "Quick demo deployed. Run 'task demo:advanced:test' for comprehensive testing."
+
+  # ============================================================================
+  # UTILITY TASKS
+  # ============================================================================
+
+  help:
+    desc: "Show all available tasks with descriptions"
+    cmds:
+      - task --list
+
+  version:
+    desc: "Show versions of key components"
+    cmds:
+      - |
+        echo "=== Component Versions ==="
+        echo -n "kubectl: " && kubectl version --client --short 2>/dev/null || echo "N/A"
+        echo -n "curl: " && curl --version | head -1
+        echo -n "jq: " && jq --version
+        echo -n "openssl: " && openssl version
+        echo -n "Kubernetes: " && kubectl version --short 2>/dev/null | grep Server || echo "N/A"
+
+  config:show:
+    desc: "Show current configuration variables"
+    cmds:
+      - |
+        echo "=== Current Configuration ==="
+        echo "NAMESPACE:      {{.NAMESPACE}}"
+        echo "DOMAIN:         {{.DOMAIN}}"
+        echo "CLOUD_PROVIDER: {{.CLOUD_PROVIDER}}"
+        echo "MAX_ITERATIONS: {{.MAX_ITERATIONS}}"
+        echo "SLEEP_INTERVAL: {{.SLEEP_INTERVAL}}"
+        echo ""
+        echo "Override with: task <task-name> NAMESPACE=myname DOMAIN=my.domain.com"
+
+  # ============================================================================
+  # DEFAULT TASK
+  # ============================================================================
+
+  default:
+    desc: "Show quick start guide"
+    cmds:
+      - |
+        echo "=== TSB Gateway API Demo Suite - Quick Start ==="
+        echo ""
+        echo "Bootstrap:"
+        echo "  task bootstrap:all              # Check prerequisites and cluster"
+        echo ""
+        echo "Advanced Demo:"
+        echo "  task demo:advanced              # Deploy and test advanced demo"
+        echo "  task demo:full:advanced         # Complete workflow with reporting"
+        echo ""
+        echo "Enterprise Demo:"
+        echo "  task demo:enterprise            # Deploy and test enterprise demo"
+        echo "  task demo:full:enterprise       # Complete enterprise workflow"
+        echo "  task demo:full:enterprise:failover  # With error injection"
+        echo ""
+        echo "Testing:"
+        echo "  task demo:advanced:test         # Run tests"
+        echo "  task demo:advanced:test:parallel # Parallel tests"
+        echo "  task demo:advanced:test:continuous  # Continuous testing"
+        echo ""
+        echo "Traffic:"
+        echo "  task traffic:generate:light     # Light background traffic"
+        echo "  task traffic:generate:medium    # Medium load"
+        echo "  task traffic:stress             # Stress test"
+        echo ""
+        echo "Inspection:"
+        echo "  task inspect:all                # View all resources"
+        echo "  task inspect:pods               # View pods"
+        echo "  task inspect:services           # View services"
+        echo ""
+        echo "Cleanup:"
+        echo "  task cleanup:advanced           # Clean advanced demo"
+        echo "  task cleanup:enterprise         # Clean enterprise demo"
+        echo "  task cleanup:all                # Clean everything"
+        echo ""
+        echo "Configuration:"
+        echo "  task config:show                # Show current config"
+        echo "  Override: task demo:advanced NAMESPACE=mycompany DOMAIN=api.company.com"
+        echo ""
+        echo "Help:"
+        echo "  task help                       # List all tasks"
+        echo "  task version                    # Show component versions"
