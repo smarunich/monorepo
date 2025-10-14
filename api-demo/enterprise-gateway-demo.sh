@@ -407,42 +407,8 @@ deploy_business_service() {
             ;;
     esac
 
-    # Inject high error rates for broken services mode (traffic failover testing)
-    if [[ "$BROKEN_SERVICES" == "true" ]]; then
-        # Break specific services in specific environments for realistic failover scenarios
-        # NOTE: Services are deployed according to array rotation:
-        #   prod→market-data-gateway, staging→trading-engine-proxy, dev→compliance-validator, test→settlement-processor
-        case $service_name in
-            market-data-gateway)
-                # Break market-data-gateway in prod environment (50% error rate)
-                if [[ "$env_type" == "prod" ]]; then
-                    error_rate="0.50"
-                    log_warning "BROKEN SERVICE: $service_name in $namespace set to ${error_rate} error rate (50%)"
-                fi
-                ;;
-            trading-engine-proxy)
-                # Break trading-engine-proxy in staging environment (70% error rate)
-                if [[ "$env_type" == "staging" ]]; then
-                    error_rate="0.70"
-                    log_warning "BROKEN SERVICE: $service_name in $namespace set to ${error_rate} error rate (70%)"
-                fi
-                ;;
-            compliance-validator)
-                # Break compliance-validator in dev environment (60% error rate)
-                if [[ "$env_type" == "dev" ]]; then
-                    error_rate="1"
-                    log_warning "BROKEN SERVICE: $service_name in $namespace set to ${error_rate} error rate (60%)"
-                fi
-                ;;
-            settlement-processor)
-                # Break settlement-processor in test environment (80% error rate)
-                if [[ "$env_type" == "test" ]]; then
-                    error_rate="1"
-                    log_warning "BROKEN SERVICE: $service_name in $namespace set to ${error_rate} error rate (80%)"
-                fi
-                ;;
-        esac
-    fi
+    # NOTE: Error injection for broken services mode is now handled at the backend layer via Giraffe sidecars
+    # Business services maintain their normal low error rates and serve as the orchestration layer
 
     kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
@@ -513,16 +479,106 @@ spec:
 EOF
 }
 
+# Get error rate for backend in broken services mode
+# Returns error rate if backend should be broken, empty string otherwise
+get_backend_error_rate() {
+    local backend="$1"
+    local namespace="$2"
+
+    # Only check if broken services mode is enabled
+    if [[ "$BROKEN_SERVICES" != "true" ]]; then
+        echo ""
+        return
+    fi
+
+    local env_type=$(echo "$namespace" | cut -d'-' -f2)
+
+    # Map backends to environments and error rates
+    # Based on array rotation: prod→market-data-feed, staging→order-execution-service, dev→compliance-records, test→settlement-ledger
+    case $backend in
+        market-data-feed)
+            if [[ "$env_type" == "prod" ]]; then
+                echo "0.50"  # 50% error rate
+            fi
+            ;;
+        order-execution-service)
+            if [[ "$env_type" == "staging" ]]; then
+                echo "0.70"  # 70% error rate
+            fi
+            ;;
+        compliance-records)
+            if [[ "$env_type" == "dev" ]]; then
+                echo "1"  # 100% error rate
+            fi
+            ;;
+        settlement-ledger)
+            if [[ "$env_type" == "test" ]]; then
+                echo "1"  # 100% error rate
+            fi
+            ;;
+    esac
+}
+
 # Deploy backend applications
 deploy_backend() {
     local backend="$1"
     local namespace="$2"
     local image=$(get_backend_image "$backend")
+    local error_rate=$(get_backend_error_rate "$backend" "$namespace")
 
     log_info "Deploying core backend $backend in namespace $namespace"
 
+    # Log if this backend will be broken
+    if [[ -n "$error_rate" ]]; then
+        local env_type=$(echo "$namespace" | cut -d'-' -f2)
+        local error_pct=$(echo "$error_rate * 100" | bc -l | cut -d'.' -f1)
+        log_warning "BROKEN BACKEND: $backend in $env_type will have Giraffe sidecar with ${error_pct}% error rate"
+    fi
+
     case $backend in
         market-data-feed)
+            # Build sidecar container spec if error injection is enabled
+            local sidecar_container=""
+            local service_target_port="80"
+
+            if [[ -n "$error_rate" ]]; then
+                service_target_port="9080"
+                sidecar_container="      - name: giraffe-sidecar
+        image: $GIRAFFE_IMAGE
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_NAME
+          value: \"${backend}-sidecar\"
+        - name: SERVICE_VERSION
+          value: \"v1\"
+        - name: SERVICE_PORT
+          value: \"9080\"
+        - name: HOMEPAGE_NAME
+          value: \"${backend}\"
+        - name: UPSTREAM_URLS
+          value: \"http://localhost:80\"
+        - name: CALL_UPSTREAMS
+          value: \"true\"
+        - name: ERROR_RATE
+          value: \"${error_rate}\"
+        - name: ERROR_STATUS_CODE
+          value: \"503\"
+        - name: ERROR_MESSAGE
+          value: \"${backend} temporarily unavailable\"
+        - name: RESPONSE_FIELD_BACKEND_TIER
+          value: \"core-backend-with-sidecar\"
+        - name: RESPONSE_FIELD_ERROR_INJECTION
+          value: \"enabled\"
+        resources:
+          requests:
+            memory: \"64Mi\"
+            cpu: \"50m\"
+          limits:
+            memory: \"128Mi\"
+            cpu: \"100m\""
+            fi
+
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -558,6 +614,7 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+${sidecar_container}
 ---
 apiVersion: v1
 kind: Service
@@ -571,11 +628,53 @@ spec:
     app: market-data-feed
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: ${service_target_port}
     name: http
 EOF
             ;;
         order-execution-service)
+            # Build sidecar container spec if error injection is enabled
+            local sidecar_container=""
+            local service_target_port="8080"
+
+            if [[ -n "$error_rate" ]]; then
+                service_target_port="9080"
+                sidecar_container="      - name: giraffe-sidecar
+        image: $GIRAFFE_IMAGE
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_NAME
+          value: \"${backend}-sidecar\"
+        - name: SERVICE_VERSION
+          value: \"v1\"
+        - name: SERVICE_PORT
+          value: \"9080\"
+        - name: HOMEPAGE_NAME
+          value: \"${backend}\"
+        - name: UPSTREAM_URLS
+          value: \"http://localhost:8080\"
+        - name: CALL_UPSTREAMS
+          value: \"true\"
+        - name: ERROR_RATE
+          value: \"${error_rate}\"
+        - name: ERROR_STATUS_CODE
+          value: \"503\"
+        - name: ERROR_MESSAGE
+          value: \"${backend} temporarily unavailable\"
+        - name: RESPONSE_FIELD_BACKEND_TIER
+          value: \"core-backend-with-sidecar\"
+        - name: RESPONSE_FIELD_ERROR_INJECTION
+          value: \"enabled\"
+        resources:
+          requests:
+            memory: \"64Mi\"
+            cpu: \"50m\"
+          limits:
+            memory: \"128Mi\"
+            cpu: \"100m\""
+            fi
+
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -614,6 +713,7 @@ spec:
           limits:
             memory: "64Mi"
             cpu: "50m"
+${sidecar_container}
 ---
 apiVersion: v1
 kind: Service
@@ -627,11 +727,53 @@ spec:
     app: order-execution-service
   ports:
   - port: 8080
-    targetPort: 8080
+    targetPort: ${service_target_port}
     name: http
 EOF
             ;;
         compliance-records)
+            # Build sidecar container spec if error injection is enabled
+            local sidecar_container=""
+            local service_target_port="80"
+
+            if [[ -n "$error_rate" ]]; then
+                service_target_port="9080"
+                sidecar_container="      - name: giraffe-sidecar
+        image: $GIRAFFE_IMAGE
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_NAME
+          value: \"${backend}-sidecar\"
+        - name: SERVICE_VERSION
+          value: \"v1\"
+        - name: SERVICE_PORT
+          value: \"9080\"
+        - name: HOMEPAGE_NAME
+          value: \"${backend}\"
+        - name: UPSTREAM_URLS
+          value: \"http://localhost:80\"
+        - name: CALL_UPSTREAMS
+          value: \"true\"
+        - name: ERROR_RATE
+          value: \"${error_rate}\"
+        - name: ERROR_STATUS_CODE
+          value: \"503\"
+        - name: ERROR_MESSAGE
+          value: \"${backend} temporarily unavailable\"
+        - name: RESPONSE_FIELD_BACKEND_TIER
+          value: \"core-backend-with-sidecar\"
+        - name: RESPONSE_FIELD_ERROR_INJECTION
+          value: \"enabled\"
+        resources:
+          requests:
+            memory: \"64Mi\"
+            cpu: \"50m\"
+          limits:
+            memory: \"128Mi\"
+            cpu: \"100m\""
+            fi
+
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: v1
 kind: ConfigMap
@@ -689,6 +831,7 @@ spec:
           limits:
             memory: "64Mi"
             cpu: "50m"
+${sidecar_container}
       volumes:
       - name: compliance-records-config
         configMap:
@@ -706,11 +849,53 @@ spec:
     app: compliance-records
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: ${service_target_port}
     name: http
 EOF
             ;;
         settlement-ledger)
+            # Build sidecar container spec if error injection is enabled
+            local sidecar_container=""
+            local service_target_port="8080"
+
+            if [[ -n "$error_rate" ]]; then
+                service_target_port="9080"
+                sidecar_container="      - name: giraffe-sidecar
+        image: $GIRAFFE_IMAGE
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_NAME
+          value: \"${backend}-sidecar\"
+        - name: SERVICE_VERSION
+          value: \"v1\"
+        - name: SERVICE_PORT
+          value: \"9080\"
+        - name: HOMEPAGE_NAME
+          value: \"${backend}\"
+        - name: UPSTREAM_URLS
+          value: \"http://localhost:8080\"
+        - name: CALL_UPSTREAMS
+          value: \"true\"
+        - name: ERROR_RATE
+          value: \"${error_rate}\"
+        - name: ERROR_STATUS_CODE
+          value: \"503\"
+        - name: ERROR_MESSAGE
+          value: \"${backend} temporarily unavailable\"
+        - name: RESPONSE_FIELD_BACKEND_TIER
+          value: \"core-backend-with-sidecar\"
+        - name: RESPONSE_FIELD_ERROR_INJECTION
+          value: \"enabled\"
+        resources:
+          requests:
+            memory: \"64Mi\"
+            cpu: \"50m\"
+          limits:
+            memory: \"128Mi\"
+            cpu: \"100m\""
+            fi
+
             kubectl apply -n "$namespace" -f - << EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -746,6 +931,7 @@ spec:
           limits:
             memory: "64Mi"
             cpu: "50m"
+${sidecar_container}
 ---
 apiVersion: v1
 kind: Service
@@ -759,7 +945,7 @@ spec:
     app: settlement-ledger
   ports:
   - port: 8080
-    targetPort: 8080
+    targetPort: ${service_target_port}
     name: http
 EOF
             ;;
@@ -1608,8 +1794,9 @@ main() {
     log_info "Skip Apply: $SKIP_APPLY"
 
     if [[ "$BROKEN_SERVICES" == "true" ]]; then
-        log_warning "BROKEN SERVICES MODE ENABLED - High error rates (50-80%) will be injected for failover testing"
-        log_warning "Broken services: market-data-gateway (prod-50%), trading-engine-proxy (staging-70%), compliance-validator (dev-60%), settlement-processor (test-80%)"
+        log_warning "BROKEN SERVICES MODE ENABLED - High error rates (50-100%) will be injected at backend layer for failover testing"
+        log_warning "Broken backends: market-data-feed (prod-50%), order-execution-service (staging-70%), compliance-records (dev-100%), settlement-ledger (test-100%)"
+        log_info "Error injection via Giraffe sidecars at core backend layer"
     fi
 
     # Handle cleanup-only mode
