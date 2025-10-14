@@ -319,22 +319,22 @@ run_unit_tests() {
 
     BASE_NAMESPACE="demo"
     NAMESPACES=("demo-prod" "demo-staging" "demo-dev" "demo-test")
-    BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
 
     local result=$(get_backend_for_namespace "demo-prod")
-    assert_equals "httpbin" "$result" "get_backend_for_namespace(demo-prod) should return httpbin"
+    assert_equals "market-data-feed" "$result" "get_backend_for_namespace(demo-prod) should return market-data-feed"
 
     result=$(get_backend_for_namespace "demo-staging")
-    assert_equals "httpbingo" "$result" "get_backend_for_namespace(demo-staging) should return httpbingo"
+    assert_equals "order-execution-service" "$result" "get_backend_for_namespace(demo-staging) should return order-execution-service"
 
     result=$(get_backend_for_namespace "demo-dev")
-    assert_equals "nginx" "$result" "get_backend_for_namespace(demo-dev) should return nginx"
+    assert_equals "compliance-records" "$result" "get_backend_for_namespace(demo-dev) should return compliance-records"
 
     result=$(get_backend_for_namespace "demo-test")
-    assert_equals "echo" "$result" "get_backend_for_namespace(demo-test) should return echo"
+    assert_equals "settlement-ledger" "$result" "get_backend_for_namespace(demo-test) should return settlement-ledger"
 
     result=$(get_backend_for_namespace "invalid-namespace")
-    assert_equals "httpbin" "$result" "get_backend_for_namespace(invalid) should return fallback httpbin"
+    assert_equals "market-data-feed" "$result" "get_backend_for_namespace(invalid) should return fallback market-data-feed"
 
     # Test 2: get_business_service_for_namespace
     log_test_section "Test: get_business_service_for_namespace()"
@@ -357,31 +357,31 @@ run_unit_tests() {
     log_test_section "Test: get_target_port_for_namespace()"
 
     result=$(get_target_port_for_namespace "demo-prod")
-    assert_equals "80" "$result" "get_target_port_for_namespace(demo-prod/httpbin) should return 80"
+    assert_equals "80" "$result" "get_target_port_for_namespace(demo-prod/market-data-feed) should return 80"
 
     result=$(get_target_port_for_namespace "demo-staging")
-    assert_equals "8080" "$result" "get_target_port_for_namespace(demo-staging/httpbingo) should return 8080"
+    assert_equals "8080" "$result" "get_target_port_for_namespace(demo-staging/order-execution-service) should return 8080"
 
     result=$(get_target_port_for_namespace "demo-dev")
-    assert_equals "80" "$result" "get_target_port_for_namespace(demo-dev/nginx) should return 80"
+    assert_equals "80" "$result" "get_target_port_for_namespace(demo-dev/compliance-records) should return 80"
 
     result=$(get_target_port_for_namespace "demo-test")
-    assert_equals "8080" "$result" "get_target_port_for_namespace(demo-test/echo) should return 8080"
+    assert_equals "8080" "$result" "get_target_port_for_namespace(demo-test/settlement-ledger) should return 8080"
 
     # Test 4: get_app_selector_for_namespace
     log_test_section "Test: get_app_selector_for_namespace()"
 
     result=$(get_app_selector_for_namespace "demo-prod")
-    assert_equals "httpbin" "$result" "get_app_selector_for_namespace(demo-prod) should return httpbin"
+    assert_equals "market-data-feed" "$result" "get_app_selector_for_namespace(demo-prod) should return market-data-feed"
 
     result=$(get_app_selector_for_namespace "demo-staging")
-    assert_equals "httpbingo" "$result" "get_app_selector_for_namespace(demo-staging) should return httpbingo"
+    assert_equals "order-execution-service" "$result" "get_app_selector_for_namespace(demo-staging) should return order-execution-service"
 
     result=$(get_app_selector_for_namespace "demo-dev")
-    assert_equals "nginx" "$result" "get_app_selector_for_namespace(demo-dev) should return nginx"
+    assert_equals "compliance-records" "$result" "get_app_selector_for_namespace(demo-dev) should return compliance-records"
 
     result=$(get_app_selector_for_namespace "demo-test")
-    assert_equals "echoserver" "$result" "get_app_selector_for_namespace(demo-test) should return echoserver"
+    assert_equals "settlement-ledger" "$result" "get_app_selector_for_namespace(demo-test) should return settlement-ledger"
 
     # Test 5: get_cloud_annotations
     log_test_section "Test: get_cloud_annotations()"
@@ -409,175 +409,165 @@ run_unit_tests() {
     # Test 7: get_backend_image
     log_test_section "Test: get_backend_image()"
 
-    BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
     BACKEND_IMAGES=("docker.io/kennethreitz/httpbin:latest" "docker.io/mccutchen/go-httpbin:v2.15.0" "nginx:alpine" "k8s.gcr.io/echoserver:1.10")
 
-    result=$(get_backend_image "httpbin")
-    assert_equals "docker.io/kennethreitz/httpbin:latest" "$result" "get_backend_image(httpbin) should return correct image"
+    result=$(get_backend_image "market-data-feed")
+    assert_equals "docker.io/kennethreitz/httpbin:latest" "$result" "get_backend_image(market-data-feed) should return httpbin image"
 
-    result=$(get_backend_image "httpbingo")
-    assert_equals "docker.io/mccutchen/go-httpbin:v2.15.0" "$result" "get_backend_image(httpbingo) should return correct image"
+    result=$(get_backend_image "order-execution-service")
+    assert_equals "docker.io/mccutchen/go-httpbin:v2.15.0" "$result" "get_backend_image(order-execution-service) should return httpbingo image"
 
-    result=$(get_backend_image "nginx")
-    assert_equals "nginx:alpine" "$result" "get_backend_image(nginx) should return correct image"
+    result=$(get_backend_image "compliance-records")
+    assert_equals "nginx:alpine" "$result" "get_backend_image(compliance-records) should return nginx image"
 
-    result=$(get_backend_image "echo")
-    assert_equals "k8s.gcr.io/echoserver:1.10" "$result" "get_backend_image(echo) should return correct image"
+    result=$(get_backend_image "settlement-ledger")
+    assert_equals "k8s.gcr.io/echoserver:1.10" "$result" "get_backend_image(settlement-ledger) should return echo image"
 
     result=$(get_backend_image "unknown")
     assert_equals "docker.io/kennethreitz/httpbin:latest" "$result" "get_backend_image(unknown) should return fallback"
+
+    # Test 8: get_backend_error_rate (NEW - for sidecar error injection)
+    log_test_section "Test: get_backend_error_rate()"
+
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
+
+    # Test with BROKEN_SERVICES=false
+    BROKEN_SERVICES=false
+    result=$(get_backend_error_rate "market-data-feed" "demo-prod")
+    assert_equals "" "$result" "get_backend_error_rate should return empty when BROKEN_SERVICES=false"
+
+    # Test with BROKEN_SERVICES=true
+    BROKEN_SERVICES=true
+
+    result=$(get_backend_error_rate "market-data-feed" "demo-prod")
+    assert_equals "0.50" "$result" "market-data-feed in prod should return 0.50 error rate"
+
+    result=$(get_backend_error_rate "order-execution-service" "demo-staging")
+    assert_equals "0.70" "$result" "order-execution-service in staging should return 0.70 error rate"
+
+    result=$(get_backend_error_rate "compliance-records" "demo-dev")
+    assert_equals "1" "$result" "compliance-records in dev should return 1 error rate (100%)"
+
+    result=$(get_backend_error_rate "settlement-ledger" "demo-test")
+    assert_equals "1" "$result" "settlement-ledger in test should return 1 error rate (100%)"
+
+    # Test that backends are NOT broken in wrong environments
+    result=$(get_backend_error_rate "market-data-feed" "demo-staging")
+    assert_equals "" "$result" "market-data-feed should NOT be broken in staging"
+
+    result=$(get_backend_error_rate "order-execution-service" "demo-prod")
+    assert_equals "" "$result" "order-execution-service should NOT be broken in prod"
+
+    result=$(get_backend_error_rate "compliance-records" "demo-prod")
+    assert_equals "" "$result" "compliance-records should NOT be broken in prod"
+
+    result=$(get_backend_error_rate "settlement-ledger" "demo-prod")
+    assert_equals "" "$result" "settlement-ledger should NOT be broken in prod"
 }
 
-# Critical: Broken Services Logic Tests
+# Critical: Broken Services Logic Tests (Backend Layer with Sidecars)
 run_broken_services_tests() {
-    log_test_header "BROKEN SERVICES LOGIC TESTS (CRITICAL)"
+    log_test_header "BROKEN SERVICES LOGIC TESTS (CRITICAL) - Backend Layer Error Injection"
 
-    log_info "Testing error rate calculation with --broken-services flag"
+    log_info "Testing backend error rate calculation with --broken-services flag (sidecar pattern)"
 
     # Setup test environment
     BASE_NAMESPACE="test"
     NAMESPACES=("test-prod" "test-staging" "test-dev" "test-test")
-    BUSINESS_SERVICES=("market-data-gateway" "trading-engine-proxy" "compliance-validator" "settlement-processor")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
     BROKEN_SERVICES=false
 
-    # Test 1: Normal error rates (BROKEN_SERVICES=false)
-    log_test_section "Test: Normal error rates (--broken-services disabled)"
+    # Test 1: Backend error rates with --broken-services disabled
+    log_test_section "Test: Backend error rates (--broken-services disabled)"
 
-    # We need to test the deploy_business_service function's error rate logic
-    # Since we can't easily extract just the error rate calculation, we'll test the full YAML output
-
-    # Mock the deploy_business_service function to capture error rates
-    deploy_business_service_test() {
-        local service_name="$1"
-        local namespace="$2"
-        local env_type=$(echo "$namespace" | cut -d'-' -f2)
-
-        # Base error rates
-        local error_rate="0.0"
-        case $service_name in
-            market-data-gateway) error_rate="0.01" ;;
-            trading-engine-proxy) error_rate="0.02" ;;
-            compliance-validator) error_rate="0.005" ;;
-            settlement-processor) error_rate="0.001" ;;
-        esac
-
-        # Environment multipliers
-        case $env_type in
-            staging) error_rate=$(echo "$error_rate * 2" | bc -l) ;;
-            dev) error_rate=$(echo "$error_rate * 3" | bc -l) ;;
-            test) error_rate=$(echo "$error_rate * 5" | bc -l) ;;
-        esac
-
-        # Broken services mode
-        if [[ "$BROKEN_SERVICES" == "true" ]]; then
-            case $service_name in
-                market-data-gateway)
-                    if [[ "$env_type" == "prod" ]]; then
-                        error_rate="0.50"
-                    fi
-                    ;;
-                trading-engine-proxy)
-                    if [[ "$env_type" == "staging" ]]; then
-                        error_rate="0.70"
-                    fi
-                    ;;
-                compliance-validator)
-                    if [[ "$env_type" == "dev" ]]; then
-                        error_rate="0.60"
-                    fi
-                    ;;
-                settlement-processor)
-                    if [[ "$env_type" == "test" ]]; then
-                        error_rate="0.80"
-                    fi
-                    ;;
-            esac
-        fi
-
-        echo "$error_rate"
-    }
-
-    # Test normal mode (no broken services)
     BROKEN_SERVICES=false
 
-    local rate=$(deploy_business_service_test "market-data-gateway" "test-prod")
-    assert_equals "0.01" "$rate" "market-data-gateway in prod should have 0.01 error rate (normal mode)"
+    local rate=$(get_backend_error_rate "market-data-feed" "test-prod")
+    assert_equals "" "$rate" "market-data-feed should have NO sidecar error injection when BROKEN_SERVICES=false"
 
-    rate=$(deploy_business_service_test "trading-engine-proxy" "test-staging")
-    # bc can output .04 instead of 0.04, so normalize by prepending 0 if needed
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.04" "$rate" "trading-engine-proxy in staging should have 0.04 error rate (normal mode, 2x multiplier)"
+    rate=$(get_backend_error_rate "order-execution-service" "test-staging")
+    assert_equals "" "$rate" "order-execution-service should have NO sidecar error injection when BROKEN_SERVICES=false"
 
-    rate=$(deploy_business_service_test "compliance-validator" "test-dev")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.015" "$rate" "compliance-validator in dev should have 0.015 error rate (normal mode, 3x multiplier)"
+    rate=$(get_backend_error_rate "compliance-records" "test-dev")
+    assert_equals "" "$rate" "compliance-records should have NO sidecar error injection when BROKEN_SERVICES=false"
 
-    rate=$(deploy_business_service_test "settlement-processor" "test-test")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.005" "$rate" "settlement-processor in test should have 0.005 error rate (normal mode, 5x multiplier)"
+    rate=$(get_backend_error_rate "settlement-ledger" "test-test")
+    assert_equals "" "$rate" "settlement-ledger should have NO sidecar error injection when BROKEN_SERVICES=false"
 
-    # Test 2: Broken services mode (BROKEN_SERVICES=true)
-    log_test_section "Test: High error rates (--broken-services enabled)"
+    # Test 2: Backend sidecar error injection (BROKEN_SERVICES=true)
+    log_test_section "Test: Backend sidecar error injection (--broken-services enabled)"
 
     BROKEN_SERVICES=true
 
-    rate=$(deploy_business_service_test "market-data-gateway" "test-prod")
-    assert_equals "0.50" "$rate" "market-data-gateway in prod should have 0.50 error rate (50%, broken mode)"
+    rate=$(get_backend_error_rate "market-data-feed" "test-prod")
+    assert_equals "0.50" "$rate" "market-data-feed in prod should have 0.50 error rate (50%, sidecar injection)"
 
-    rate=$(deploy_business_service_test "trading-engine-proxy" "test-staging")
-    assert_equals "0.70" "$rate" "trading-engine-proxy in staging should have 0.70 error rate (70%, broken mode)"
+    rate=$(get_backend_error_rate "order-execution-service" "test-staging")
+    assert_equals "0.70" "$rate" "order-execution-service in staging should have 0.70 error rate (70%, sidecar injection)"
 
-    rate=$(deploy_business_service_test "compliance-validator" "test-dev")
-    assert_equals "0.60" "$rate" "compliance-validator in dev should have 0.60 error rate (60%, broken mode)"
+    rate=$(get_backend_error_rate "compliance-records" "test-dev")
+    assert_equals "1" "$rate" "compliance-records in dev should have 1.0 error rate (100%, sidecar injection)"
 
-    rate=$(deploy_business_service_test "settlement-processor" "test-test")
-    assert_equals "0.80" "$rate" "settlement-processor in test should have 0.80 error rate (80%, broken mode)"
+    rate=$(get_backend_error_rate "settlement-ledger" "test-test")
+    assert_equals "1" "$rate" "settlement-ledger in test should have 1.0 error rate (100%, sidecar injection)"
 
-    # Test 3: Verify broken services only affect correct environment
-    log_test_section "Test: Broken services only affect correct environment"
+    # Test 3: Verify backend errors only affect correct environment
+    log_test_section "Test: Backend errors only in designated environments"
 
     BROKEN_SERVICES=true
 
-    # market-data-gateway should only be broken in prod, not in other environments
-    rate=$(deploy_business_service_test "market-data-gateway" "test-staging")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.02" "$rate" "market-data-gateway in staging should NOT be broken (normal rate with 2x multiplier)"
+    # market-data-feed should only be broken in prod, not in other environments
+    rate=$(get_backend_error_rate "market-data-feed" "test-staging")
+    assert_equals "" "$rate" "market-data-feed in staging should NOT have sidecar error injection"
 
-    rate=$(deploy_business_service_test "market-data-gateway" "test-dev")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.03" "$rate" "market-data-gateway in dev should NOT be broken (normal rate with 3x multiplier)"
+    rate=$(get_backend_error_rate "market-data-feed" "test-dev")
+    assert_equals "" "$rate" "market-data-feed in dev should NOT have sidecar error injection"
 
-    # trading-engine-proxy should only be broken in staging
-    rate=$(deploy_business_service_test "trading-engine-proxy" "test-prod")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.02" "$rate" "trading-engine-proxy in prod should NOT be broken (normal base rate)"
+    # order-execution-service should only be broken in staging
+    rate=$(get_backend_error_rate "order-execution-service" "test-prod")
+    assert_equals "" "$rate" "order-execution-service in prod should NOT have sidecar error injection"
 
-    rate=$(deploy_business_service_test "trading-engine-proxy" "test-dev")
-    [[ "$rate" == .* ]] && rate="0$rate"
-    assert_equals "0.06" "$rate" "trading-engine-proxy in dev should NOT be broken (normal rate with 3x multiplier)"
+    rate=$(get_backend_error_rate "order-execution-service" "test-dev")
+    assert_equals "" "$rate" "order-execution-service in dev should NOT have sidecar error injection"
 
-    # Test 4: Array rotation logic verification
-    log_test_section "Test: Business service to environment mapping (array rotation)"
+    # compliance-records should only be broken in dev
+    rate=$(get_backend_error_rate "compliance-records" "test-prod")
+    assert_equals "" "$rate" "compliance-records in prod should NOT have sidecar error injection"
+
+    rate=$(get_backend_error_rate "compliance-records" "test-staging")
+    assert_equals "" "$rate" "compliance-records in staging should NOT have sidecar error injection"
+
+    # settlement-ledger should only be broken in test
+    rate=$(get_backend_error_rate "settlement-ledger" "test-prod")
+    assert_equals "" "$rate" "settlement-ledger in prod should NOT have sidecar error injection"
+
+    rate=$(get_backend_error_rate "settlement-ledger" "test-staging")
+    assert_equals "" "$rate" "settlement-ledger in staging should NOT have sidecar error injection"
+
+    # Test 4: Array rotation logic verification for backend mapping
+    log_test_section "Test: Backend to environment mapping (array rotation)"
 
     BASE_NAMESPACE="company"
     NAMESPACES=("company-prod" "company-staging" "company-dev" "company-test")
-    BUSINESS_SERVICES=("market-data-gateway" "trading-engine-proxy" "compliance-validator" "settlement-processor")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
 
     # Verify the mapping follows array rotation (i % array_length)
-    local service=$(get_business_service_for_namespace "company-prod")
-    assert_equals "market-data-gateway" "$service" "company-prod (index 0) should map to market-data-gateway (index 0)"
+    local backend=$(get_backend_for_namespace "company-prod")
+    assert_equals "market-data-feed" "$backend" "company-prod (index 0) should map to market-data-feed (index 0)"
 
-    service=$(get_business_service_for_namespace "company-staging")
-    assert_equals "trading-engine-proxy" "$service" "company-staging (index 1) should map to trading-engine-proxy (index 1)"
+    backend=$(get_backend_for_namespace "company-staging")
+    assert_equals "order-execution-service" "$backend" "company-staging (index 1) should map to order-execution-service (index 1)"
 
-    service=$(get_business_service_for_namespace "company-dev")
-    assert_equals "compliance-validator" "$service" "company-dev (index 2) should map to compliance-validator (index 2)"
+    backend=$(get_backend_for_namespace "company-dev")
+    assert_equals "compliance-records" "$backend" "company-dev (index 2) should map to compliance-records (index 2)"
 
-    service=$(get_business_service_for_namespace "company-test")
-    assert_equals "settlement-processor" "$service" "company-test (index 3) should map to settlement-processor (index 3)"
+    backend=$(get_backend_for_namespace "company-test")
+    assert_equals "settlement-ledger" "$backend" "company-test (index 3) should map to settlement-ledger (index 3)"
 
-    log_info "Array rotation ensures each business service is deployed to its corresponding environment"
-    log_info "This is CRITICAL for broken services mode to work correctly"
+    log_info "Array rotation ensures each backend is deployed to its corresponding environment"
+    log_info "CRITICAL: Backend mapping must match for sidecar error injection to work correctly"
+    log_info "Architecture: Gateway → Business Service (healthy) → Backend + Giraffe Sidecar (with errors)"
 }
 
 # Integration Tests
@@ -607,15 +597,17 @@ run_integration_tests() {
     assert_contains "$output" "Skip Apply: true" "Should indicate skip-apply mode"
     assert_contains "$output" "Skipped applying" "Should skip applying configurations"
 
-    # Test 4: Script execution with --broken-services flag
-    log_test_section "Test: Script with --broken-services flag"
+    # Test 4: Script execution with --broken-services flag (backend layer)
+    log_test_section "Test: Script with --broken-services flag (backend sidecar injection)"
 
     output=$("$TARGET_SCRIPT" -n test-ns -d test.com --broken-services --skip-apply 2>&1 || true)
     assert_contains "$output" "BROKEN SERVICES MODE ENABLED" "Should indicate broken services mode"
-    assert_contains "$output" "market-data-gateway (prod-50%)" "Should mention market-data-gateway broken service"
-    assert_contains "$output" "trading-engine-proxy (staging-70%)" "Should mention trading-engine-proxy broken service"
-    assert_contains "$output" "compliance-validator (dev-60%)" "Should mention compliance-validator broken service"
-    assert_contains "$output" "settlement-processor (test-80%)" "Should mention settlement-processor broken service"
+    assert_contains "$output" "Broken backends:" "Should mention broken backends"
+    assert_contains "$output" "market-data-feed (prod-50%)" "Should mention market-data-feed broken backend"
+    assert_contains "$output" "order-execution-service (staging-70%)" "Should mention order-execution-service broken backend"
+    assert_contains "$output" "compliance-records (dev-100%)" "Should mention compliance-records broken backend"
+    assert_contains "$output" "settlement-ledger (test-100%)" "Should mention settlement-ledger broken backend"
+    assert_contains "$output" "Giraffe sidecars" "Should mention Giraffe sidecar injection"
 
     # Test 5: Command-line argument parsing
     log_test_section "Test: Command-line argument parsing"
@@ -736,7 +728,7 @@ run_mapping_tests() {
 
     BASE_NAMESPACE="mapping-test"
     NAMESPACES=("mapping-test-prod" "mapping-test-staging" "mapping-test-dev" "mapping-test-test")
-    BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
     BUSINESS_SERVICES=("market-data-gateway" "trading-engine-proxy" "compliance-validator" "settlement-processor")
 
     # Verify consistent mapping
@@ -757,12 +749,12 @@ run_mapping_tests() {
     # Test get_upstream_services_for_business_service
     local upstream=$(get_upstream_services_for_business_service "market-data-gateway" "mapping-test-prod")
     # Local service uses short name, cross-namespace uses FQDN
-    assert_contains "$upstream" "httpbin:" "market-data-gateway should reference local httpbin"
-    assert_contains "$upstream" "httpbingo.mapping-test-staging" "market-data-gateway should reference cross-namespace services"
+    assert_contains "$upstream" "market-data-feed:" "market-data-gateway should reference local market-data-feed"
+    assert_contains "$upstream" "order-execution-service.mapping-test-staging" "market-data-gateway should reference cross-namespace services"
 
     upstream=$(get_upstream_services_for_business_service "trading-engine-proxy" "mapping-test-staging")
-    assert_contains "$upstream" "httpbingo:" "trading-engine-proxy should reference local httpbingo"
-    assert_contains "$upstream" "httpbin.mapping-test-prod" "trading-engine-proxy should reference prod httpbin"
+    assert_contains "$upstream" "order-execution-service:" "trading-engine-proxy should reference local order-execution-service"
+    assert_contains "$upstream" "market-data-feed.mapping-test-prod" "trading-engine-proxy should reference prod market-data-feed"
 }
 
 # Performance and Edge Case Tests
@@ -791,7 +783,7 @@ run_edge_case_tests() {
         NAMESPACES+=("scale-env$i")
     done
 
-    BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
+    BACKEND_NAMES=("market-data-feed" "order-execution-service" "compliance-records" "settlement-ledger")
 
     # Test array rotation works correctly with large arrays
     local result=$(get_backend_for_namespace "scale-env1")

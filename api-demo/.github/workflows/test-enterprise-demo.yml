@@ -114,10 +114,13 @@ jobs:
         # Verify broken services mode is enabled
         echo "$output" | grep -q "BROKEN SERVICES MODE ENABLED" || exit 1
 
-        # Verify all 4 broken services are mentioned
-        echo "$output" | grep -q "market-data-gateway (prod-50%)" || exit 1
-        echo "$output" | grep -q "trading-engine-proxy (staging-70%)" || exit 1
-        echo "$output" | grep -q "compliance-validator (dev-60%)" || exit 1
-        echo "$output" | grep -q "settlement-processor (test-80%)" || exit 1
+        # Verify all 4 broken backends are mentioned (sidecar pattern)
+        echo "$output" | grep -q "market-data-feed (prod-50%)" || exit 1
+        echo "$output" | grep -q "order-execution-service (staging-70%)" || exit 1
+        echo "$output" | grep -q "compliance-records (dev-100%)" || exit 1
+        echo "$output" | grep -q "settlement-ledger (test-100%)" || exit 1
 
-        echo "✓ Broken services flag validation passed"
+        # Verify sidecar injection is mentioned
+        echo "$output" | grep -q "Giraffe sidecars" || exit 1
+
+        echo "✓ Broken services flag validation passed (backend sidecar injection)"
