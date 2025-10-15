@@ -36,7 +36,7 @@ BACKEND_NAMES=("httpbin" "httpbingo" "nginx" "echo")
 BACKEND_IMAGES=("docker.io/kennethreitz/httpbin:latest" "docker.io/mccutchen/go-httpbin:v2.15.0" "nginx:alpine" "k8s.gcr.io/echoserver:1.10")
 
 # Giraffe image for business service layers
-GIRAFFE_IMAGE="us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:latest"
+GIRAFFE_IMAGE="us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:v1.0.1"
 
 # Helper function to get backend image
 get_backend_image() {
