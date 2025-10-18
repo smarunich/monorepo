@@ -46,7 +46,7 @@ spec:
       containers:
       # Giraffe sidecar (100% healthy)
       - name: giraffe
-        image: gcr.io/tetratelabs/giraffe:latest
+        image: us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:v1.0.1
         ports:
         - containerPort: 8080
           name: http
@@ -120,7 +120,7 @@ spec:
       containers:
       # Giraffe sidecar (100% healthy)
       - name: giraffe
-        image: gcr.io/tetratelabs/giraffe:latest
+        image: us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:v1.0.1
         ports:
         - containerPort: 8080
           name: http
@@ -194,7 +194,7 @@ spec:
       containers:
       # Giraffe sidecar (100% healthy)
       - name: giraffe
-        image: gcr.io/tetratelabs/giraffe:latest
+        image: us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:v1.0.1
         ports:
         - containerPort: 8080
           name: http
