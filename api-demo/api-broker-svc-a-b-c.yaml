@@ -1,0 +1,229 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: api-broker
+  labels:
+    app: api-broker
+
+---
+# Service A
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-a
+  namespace: api-broker
+  labels:
+    app: svc-a
+    service: svc-a
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: svc-a
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-a
+  namespace: api-broker
+  labels:
+    app: svc-a
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: svc-a
+  template:
+    metadata:
+      labels:
+        app: svc-a
+        version: v1
+    spec:
+      containers:
+      # Giraffe sidecar (100% healthy)
+      - name: giraffe
+        image: gcr.io/tetratelabs/giraffe:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: GIRAFFE_PORT
+          value: "8080"
+        - name: UPSTREAM_URI
+          value: "http://localhost:80"
+        - name: ERROR_RATE
+          value: "0"  # 100% healthy - 0% error rate
+        - name: SERVICE_NAME
+          value: "svc-a"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      # HTTPBin backend
+      - name: httpbin
+        image: kennethreitz/httpbin:latest
+        ports:
+        - containerPort: 80
+          name: http-backend
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+---
+# Service B
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-b
+  namespace: api-broker
+  labels:
+    app: svc-b
+    service: svc-b
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: svc-b
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-b
+  namespace: api-broker
+  labels:
+    app: svc-b
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: svc-b
+  template:
+    metadata:
+      labels:
+        app: svc-b
+        version: v1
+    spec:
+      containers:
+      # Giraffe sidecar (100% healthy)
+      - name: giraffe
+        image: gcr.io/tetratelabs/giraffe:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: GIRAFFE_PORT
+          value: "8080"
+        - name: UPSTREAM_URI
+          value: "http://localhost:80"
+        - name: ERROR_RATE
+          value: "0"  # 100% healthy - 0% error rate
+        - name: SERVICE_NAME
+          value: "svc-b"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      # HTTPBin backend
+      - name: httpbin
+        image: kennethreitz/httpbin:latest
+        ports:
+        - containerPort: 80
+          name: http-backend
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+---
+# Service C
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-c
+  namespace: api-broker
+  labels:
+    app: svc-c
+    service: svc-c
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: svc-c
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-c
+  namespace: api-broker
+  labels:
+    app: svc-c
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: svc-c
+  template:
+    metadata:
+      labels:
+        app: svc-c
+        version: v1
+    spec:
+      containers:
+      # Giraffe sidecar (100% healthy)
+      - name: giraffe
+        image: gcr.io/tetratelabs/giraffe:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: GIRAFFE_PORT
+          value: "8080"
+        - name: UPSTREAM_URI
+          value: "http://localhost:80"
+        - name: ERROR_RATE
+          value: "0"  # 100% healthy - 0% error rate
+        - name: SERVICE_NAME
+          value: "svc-c"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      # HTTPBin backend
+      - name: httpbin
+        image: kennethreitz/httpbin:latest
+        ports:
+        - containerPort: 80
+          name: http-backend
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
