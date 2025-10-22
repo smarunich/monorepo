@@ -1340,7 +1340,7 @@ demo_waf_protection() {
         # Different WAF configurations based on environment and business service
         case $env_type in
             prod)
-                local waf_config="SecRuleEngine On"
+                local waf_config="SecRuleEngine DetectionOnly"
                 local path="/protected"
                 ;;
             staging)

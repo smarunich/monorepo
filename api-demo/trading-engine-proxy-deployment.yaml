@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-engine-proxy
+  labels:
+    app: trading-engine-proxy
+    version: v1
+    tier: business-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trading-engine-proxy
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: trading-engine-proxy
+        version: v1
+        tier: business-service
+        business-service: trading-engine-proxy
+    spec:
+      containers:
+      - name: giraffe
+        image: us-east1-docker.pkg.dev/dogfood-cx/registryrepository/giraffe:v1.0.1
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_NAME
+          value: "trading-engine-proxy"
+        - name: SERVICE_VERSION
+          value: "v1"
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: HOMEPAGE_NAME
+          value: "trading-engine-proxy"
+        - name: UPSTREAM_URLS
+          value: "http://order-execution-service:8080,http://market-data-feed:80,http://settlement-ledger:8080"
+        - name: CALL_UPSTREAMS
+          value: "true"
+        - name: INCLUDE_HEADERS
+          value: "true"
+        - name: INCLUDE_QUERY
+          value: "true"
+        - name: RESPONSE_DELAY_MS
+          value: "100"
+        - name: ERROR_RATE
+          value: "0.02"
+        - name: ERROR_STATUS_CODE
+          value: "503"
+        - name: ERROR_MESSAGE
+          value: "trading-engine-proxy service temporarily unavailable"
+        - name: RESPONSE_FIELD_BUSINESS_TIER
+          value: "trading-engine-proxy"
+        - name: RESPONSE_FIELD_ENVIRONMENT
+          value: "prod"
+        - name: RESPONSE_FIELD_PROCESSING_TIME_MS
+          value: "100"
+        - name: RESPONSE_FIELD_ENGINE_VERSION
+          value: "v2.1.5"
+        - name: RESPONSE_FIELD_ORDER_ROUTING
+          value: "smart-order-router"
+        - name: RESPONSE_FIELD_EXECUTION_VENUE
+          value: "primary-exchange"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trading-engine-proxy
+  labels:
+    app: trading-engine-proxy
+    tier: business-service
+spec:
+  selector:
+    app: trading-engine-proxy
+  ports:
+  - port: 9080
+    targetPort: 9080
+    name: http

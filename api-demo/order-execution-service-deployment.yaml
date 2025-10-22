@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-execution-service
+  labels:
+    app: order-execution-service
+    version: v1
+    tier: core-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-execution-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: order-execution-service
+        version: v1
+        backend: order-execution-service
+        tier: core-backend
+    spec:
+      containers:
+      - image: docker.io/mccutchen/go-httpbin:v2.15.0
+        name: order-execution-service
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-execution-service
+  labels:
+    app: order-execution-service
+    tier: core-backend
+spec:
+  selector:
+    app: order-execution-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http

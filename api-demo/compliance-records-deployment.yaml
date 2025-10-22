@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compliance-records-config
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name localhost;
+        location / {
+            return 200 '{"service": "compliance-records", "namespace": "default", "path": "$uri", "method": "$request_method", "headers": $http_host, "backend_tier": "core"}';
+            add_header Content-Type application/json;
+        }
+        location /health {
+            return 200 'healthy';
+            add_header Content-Type text/plain;
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compliance-records
+  labels:
+    app: compliance-records
+    version: v1
+    tier: core-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: compliance-records
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: compliance-records
+        version: v1
+        backend: compliance-records
+        tier: core-backend
+    spec:
+      containers:
+      - image: nginx:alpine
+        name: compliance-records
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: compliance-records-config
+          mountPath: /etc/nginx/conf.d
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+      volumes:
+      - name: compliance-records-config
+        configMap:
+          name: compliance-records-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: compliance-records
+  labels:
+    app: compliance-records
+    tier: core-backend
+spec:
+  selector:
+    app: compliance-records
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
