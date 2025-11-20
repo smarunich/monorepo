@@ -174,7 +174,13 @@ Each service includes split gateway annotations for dedicated traffic management
 annotations:
   gateway.tetrate.io/workload-selector: "app={namespace}-{env}-gateway"
   gateway.tetrate.io/gateway-namespace: "tetrate-system"
+  gateway.tetrate.io/auto-deploy: "true"  # Required: enables automatic gateway deployment
 ```
+
+> **⚠️ Important**: As of the latest TSB Gateway changes, auto-deployment is **disabled by default**.
+> You must explicitly set `gateway.tetrate.io/auto-deploy: "true"` when using `workload-selector`
+> to enable automatic creation of gateway.install resources. Without this annotation, the gateway
+> will only check if a gateway.install resource exists but won't create one.
 
 ### Environment Gateway Mapping
 - **Production**: `app=mycompany-prod-gateway`

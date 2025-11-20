@@ -577,6 +577,7 @@ get_gateway_annotations_for_namespace() {
     cat << EOF
     gateway.tetrate.io/workload-selector: "app=${BASE_NAMESPACE}-${env_type}-gateway"
     gateway.tetrate.io/gateway-namespace: "tetrate-system"
+    gateway.tetrate.io/auto-deploy: "true"
 EOF
 }
 

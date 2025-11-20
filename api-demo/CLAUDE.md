@@ -181,10 +181,13 @@ annotations:
   gateway.tetrate.io/host: "{subdomain}.{domain}"
   gateway.tetrate.io/workload-selector: "app={namespace}-{env}-gateway"
   gateway.tetrate.io/gateway-namespace: "tetrate-system"
+  gateway.tetrate.io/auto-deploy: "true"  # Required: auto-deployment is disabled by default
   gateway.tetrate.io/protocol: "HTTP|HTTPS"
   gateway.tetrate.io/port: "{port}"
   # Additional scenario-specific annotations...
 ```
+
+**Important**: As of the latest TSB Gateway changes, auto-deployment is **disabled by default**. You must explicitly set `gateway.tetrate.io/auto-deploy: "true"` when using `workload-selector` to enable automatic creation of gateway.install resources. Without this annotation, the gateway will only check if a gateway.install resource exists but won't create one.
 
 ### Backend Mapping
 
